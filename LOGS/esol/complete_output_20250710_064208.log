@@ -1,0 +1,338 @@
+🔧 All print outputs will be saved to: ./LOGS/esol/complete_output_20250710_064208.log
+Device set to : NVIDIA GeForce RTX 4060 Ti
+lr:0.0003, cl_loss:0.1, cl_loss_num:0, pro_num:1, pool_type:attention, gnn_hidden_dim:256, batch_size:32, norm:1, fusion:3
+[GeoGNNModel] embed_dim:256
+[GeoGNNModel] dropout_rate:0.5
+[GeoGNNModel] layer_num:8
+[GeoGNNModel] readout:mean
+[GeoGNNModel] atom_names:['atomic_num', 'formal_charge', 'degree', 'chiral_tag', 'total_numHs', 'is_aromatic', 'hybridization']
+[GeoGNNModel] bond_names:['bond_dir', 'bond_type', 'is_in_ring']
+[GeoGNNModel] bond_float_names:['bond_length']
+[GeoGNNModel] bond_angle_float_names:['bond_angle']
+train model ...
+Train - epoch:0, All Loss: 48.6763, Lab Loss: 30.0926, Recon Loss: 17.2771
+Val   - epoch:0, All Loss: 43.9369, Lab Loss: 42.0820, Recon Loss: 2.6150, Result: 3.23283
+*****************************************************************************Test result:2.918238119789623********
+
+Train - epoch:1, All Loss: 27.2088, Lab Loss: 18.0278, Recon Loss: 3.9659
+Val   - epoch:1, All Loss: 10.8849, Lab Loss: 10.3335, Recon Loss: 0.3744, Result: 1.63224
+*****************************************************************************Test result:1.9216707015063967********
+
+Train - epoch:2, All Loss: 13.1453, Lab Loss: 9.7637, Recon Loss: 1.0977
+Val   - epoch:2, All Loss: 4.8932, Lab Loss: 4.6670, Recon Loss: 0.0717, Result: 1.10914
+*****************************************************************************Test result:1.2168774222451866********
+
+Train - epoch:3, All Loss: 7.1289, Lab Loss: 5.8124, Recon Loss: 0.4661
+Val   - epoch:3, All Loss: 8.7101, Lab Loss: 8.5542, Recon Loss: 0.0619, Result: 1.44933
+Train - epoch:4, All Loss: 9.8349, Lab Loss: 8.0086, Recon Loss: 0.3656
+Val   - epoch:4, All Loss: 3.7709, Lab Loss: 3.5660, Recon Loss: 0.0377, Result: 0.94662
+*****************************************************************************Test result:0.8552576906131018********
+
+Train - epoch:5, All Loss: 7.4686, Lab Loss: 6.0380, Recon Loss: 0.3109
+Val   - epoch:5, All Loss: 2.2378, Lab Loss: 2.0823, Recon Loss: 0.0448, Result: 0.71979
+*****************************************************************************Test result:0.7107233393340779********
+
+Train - epoch:6, All Loss: 5.2598, Lab Loss: 4.3115, Recon Loss: 0.2436
+Val   - epoch:6, All Loss: 2.4270, Lab Loss: 2.3117, Recon Loss: 0.0313, Result: 0.77605
+Train - epoch:7, All Loss: 5.8116, Lab Loss: 4.7007, Recon Loss: 0.2758
+Val   - epoch:7, All Loss: 1.9447, Lab Loss: 1.8091, Recon Loss: 0.0330, Result: 0.65875
+*****************************************************************************Test result:0.6260607964267737********
+
+Train - epoch:8, All Loss: 4.9715, Lab Loss: 4.1519, Recon Loss: 0.2251
+Val   - epoch:8, All Loss: 4.0433, Lab Loss: 3.9223, Recon Loss: 0.0389, Result: 1.00333
+Train - epoch:9, All Loss: 5.9229, Lab Loss: 4.7349, Recon Loss: 0.2375
+Val   - epoch:9, All Loss: 4.7109, Lab Loss: 4.5786, Recon Loss: 0.0392, Result: 1.05060
+Train - epoch:10, All Loss: 6.5567, Lab Loss: 5.2260, Recon Loss: 0.3095
+Val   - epoch:10, All Loss: 2.9690, Lab Loss: 2.8491, Recon Loss: 0.0385, Result: 0.82237
+Train - epoch:11, All Loss: 4.1060, Lab Loss: 3.3123, Recon Loss: 0.2449
+Val   - epoch:11, All Loss: 2.2024, Lab Loss: 2.1092, Recon Loss: 0.0367, Result: 0.70909
+Train - epoch:12, All Loss: 4.0843, Lab Loss: 3.3717, Recon Loss: 0.2459
+Val   - epoch:12, All Loss: 10.8252, Lab Loss: 10.7140, Recon Loss: 0.0456, Result: 1.63486
+Train - epoch:13, All Loss: 7.9256, Lab Loss: 6.4648, Recon Loss: 0.3025
+Val   - epoch:13, All Loss: 2.6667, Lab Loss: 2.4677, Recon Loss: 0.0396, Result: 0.78064
+Train - epoch:14, All Loss: 4.3868, Lab Loss: 3.4125, Recon Loss: 0.2332
+Val   - epoch:14, All Loss: 2.0958, Lab Loss: 2.0060, Recon Loss: 0.0355, Result: 0.68243
+Train - epoch:15, All Loss: 4.0979, Lab Loss: 3.3540, Recon Loss: 0.2202
+Val   - epoch:15, All Loss: 2.1336, Lab Loss: 2.0498, Recon Loss: 0.0265, Result: 0.68985
+Train - epoch:16, All Loss: 3.8608, Lab Loss: 3.3248, Recon Loss: 0.1866
+Val   - epoch:16, All Loss: 2.2304, Lab Loss: 2.1431, Recon Loss: 0.0270, Result: 0.72656
+Train - epoch:17, All Loss: 4.5601, Lab Loss: 3.7505, Recon Loss: 0.2166
+Val   - epoch:17, All Loss: 2.0919, Lab Loss: 1.9857, Recon Loss: 0.0303, Result: 0.69118
+Train - epoch:18, All Loss: 4.3171, Lab Loss: 3.4482, Recon Loss: 0.2508
+Val   - epoch:18, All Loss: 2.3414, Lab Loss: 2.2392, Recon Loss: 0.0340, Result: 0.71022
+Train - epoch:19, All Loss: 2.8273, Lab Loss: 2.2453, Recon Loss: 0.1923
+Val   - epoch:19, All Loss: 3.7512, Lab Loss: 3.6879, Recon Loss: 0.0295, Result: 0.95906
+Train - epoch:20, All Loss: 3.0663, Lab Loss: 2.5633, Recon Loss: 0.2076
+Val   - epoch:20, All Loss: 1.7871, Lab Loss: 1.7127, Recon Loss: 0.0323, Result: 0.64748
+*****************************************************************************Test result:0.6631553053930692********
+
+Train - epoch:21, All Loss: 2.6379, Lab Loss: 2.0993, Recon Loss: 0.1970
+Val   - epoch:21, All Loss: 1.6391, Lab Loss: 1.5815, Recon Loss: 0.0222, Result: 0.60520
+*****************************************************************************Test result:0.602047964845995********
+
+Train - epoch:22, All Loss: 2.1958, Lab Loss: 1.8228, Recon Loss: 0.1463
+Val   - epoch:22, All Loss: 1.7099, Lab Loss: 1.6613, Recon Loss: 0.0225, Result: 0.64070
+Train - epoch:23, All Loss: 2.1053, Lab Loss: 1.7686, Recon Loss: 0.1385
+Val   - epoch:23, All Loss: 1.7836, Lab Loss: 1.7397, Recon Loss: 0.0242, Result: 0.65562
+Train - epoch:24, All Loss: 2.4270, Lab Loss: 2.0701, Recon Loss: 0.1659
+Val   - epoch:24, All Loss: 1.6729, Lab Loss: 1.6197, Recon Loss: 0.0236, Result: 0.63054
+Train - epoch:25, All Loss: 2.4227, Lab Loss: 2.0214, Recon Loss: 0.1533
+Val   - epoch:25, All Loss: 2.1187, Lab Loss: 2.0647, Recon Loss: 0.0239, Result: 0.68034
+Train - epoch:26, All Loss: 1.9498, Lab Loss: 1.5687, Recon Loss: 0.1376
+Val   - epoch:26, All Loss: 1.8892, Lab Loss: 1.8432, Recon Loss: 0.0186, Result: 0.66783
+Train - epoch:27, All Loss: 1.8636, Lab Loss: 1.5284, Recon Loss: 0.1346
+Val   - epoch:27, All Loss: 1.5483, Lab Loss: 1.5033, Recon Loss: 0.0180, Result: 0.61292
+Train - epoch:28, All Loss: 1.8836, Lab Loss: 1.5578, Recon Loss: 0.1151
+Val   - epoch:28, All Loss: 2.6757, Lab Loss: 2.6370, Recon Loss: 0.0200, Result: 0.79900
+Train - epoch:29, All Loss: 2.1545, Lab Loss: 1.7838, Recon Loss: 0.1828
+Val   - epoch:29, All Loss: 1.9298, Lab Loss: 1.8762, Recon Loss: 0.0232, Result: 0.66412
+Train - epoch:30, All Loss: 1.4183, Lab Loss: 1.0861, Recon Loss: 0.1046
+Val   - epoch:30, All Loss: 1.6577, Lab Loss: 1.6231, Recon Loss: 0.0122, Result: 0.61903
+Train - epoch:31, All Loss: 1.1776, Lab Loss: 0.9300, Recon Loss: 0.0880
+Val   - epoch:31, All Loss: 2.4632, Lab Loss: 2.4340, Recon Loss: 0.0154, Result: 0.74345
+Train - epoch:32, All Loss: 1.8462, Lab Loss: 1.5652, Recon Loss: 0.1346
+Val   - epoch:32, All Loss: 2.2123, Lab Loss: 2.1736, Recon Loss: 0.0187, Result: 0.70086
+Train - epoch:33, All Loss: 1.1872, Lab Loss: 0.9205, Recon Loss: 0.1019
+Val   - epoch:33, All Loss: 1.8051, Lab Loss: 1.7737, Recon Loss: 0.0144, Result: 0.63242
+Train - epoch:34, All Loss: 1.0295, Lab Loss: 0.8138, Recon Loss: 0.0750
+Val   - epoch:34, All Loss: 1.5959, Lab Loss: 1.5713, Recon Loss: 0.0115, Result: 0.58788
+*****************************************************************************Test result:0.6525354022476865********
+
+Train - epoch:35, All Loss: 0.8905, Lab Loss: 0.6992, Recon Loss: 0.0813
+Val   - epoch:35, All Loss: 1.5539, Lab Loss: 1.5311, Recon Loss: 0.0115, Result: 0.59936
+Train - epoch:36, All Loss: 0.8896, Lab Loss: 0.7129, Recon Loss: 0.0852
+Val   - epoch:36, All Loss: 1.8550, Lab Loss: 1.8322, Recon Loss: 0.0148, Result: 0.65214
+Train - epoch:37, All Loss: 1.0034, Lab Loss: 0.8221, Recon Loss: 0.0887
+Val   - epoch:37, All Loss: 2.6250, Lab Loss: 2.5981, Recon Loss: 0.0314, Result: 0.76026
+Train - epoch:38, All Loss: 2.4067, Lab Loss: 2.1179, Recon Loss: 0.2006
+Val   - epoch:38, All Loss: 2.0251, Lab Loss: 1.9852, Recon Loss: 0.0185, Result: 0.67206
+Train - epoch:39, All Loss: 1.2253, Lab Loss: 0.9204, Recon Loss: 0.1072
+Val   - epoch:39, All Loss: 1.7586, Lab Loss: 1.7242, Recon Loss: 0.0126, Result: 0.62949
+Train - epoch:40, All Loss: 0.8978, Lab Loss: 0.6601, Recon Loss: 0.0800
+Val   - epoch:40, All Loss: 1.4133, Lab Loss: 1.3865, Recon Loss: 0.0114, Result: 0.56147
+*****************************************************************************Test result:0.6638260363061361********
+
+Train - epoch:41, All Loss: 0.7408, Lab Loss: 0.5491, Recon Loss: 0.0681
+Val   - epoch:41, All Loss: 1.5403, Lab Loss: 1.5178, Recon Loss: 0.0102, Result: 0.58737
+Train - epoch:42, All Loss: 0.9765, Lab Loss: 0.7864, Recon Loss: 0.0760
+Val   - epoch:42, All Loss: 2.1433, Lab Loss: 2.1180, Recon Loss: 0.0134, Result: 0.69839
+Train - epoch:43, All Loss: 1.0478, Lab Loss: 0.8394, Recon Loss: 0.1057
+Val   - epoch:43, All Loss: 1.8828, Lab Loss: 1.8571, Recon Loss: 0.0128, Result: 0.63727
+Train - epoch:44, All Loss: 1.1038, Lab Loss: 0.8989, Recon Loss: 0.0915
+Val   - epoch:44, All Loss: 1.5627, Lab Loss: 1.5371, Recon Loss: 0.0143, Result: 0.59996
+Train - epoch:45, All Loss: 0.8731, Lab Loss: 0.6788, Recon Loss: 0.0794
+Val   - epoch:45, All Loss: 1.6302, Lab Loss: 1.6065, Recon Loss: 0.0111, Result: 0.60796
+Train - epoch:46, All Loss: 1.1168, Lab Loss: 0.9205, Recon Loss: 0.0979
+Val   - epoch:46, All Loss: 1.5496, Lab Loss: 1.5233, Recon Loss: 0.0139, Result: 0.59026
+Train - epoch:47, All Loss: 0.9982, Lab Loss: 0.7873, Recon Loss: 0.0857
+Val   - epoch:47, All Loss: 1.5121, Lab Loss: 1.4856, Recon Loss: 0.0112, Result: 0.57868
+Train - epoch:48, All Loss: 0.7501, Lab Loss: 0.5444, Recon Loss: 0.0749
+Val   - epoch:48, All Loss: 1.5628, Lab Loss: 1.5388, Recon Loss: 0.0116, Result: 0.58206
+Train - epoch:49, All Loss: 0.6205, Lab Loss: 0.4365, Recon Loss: 0.0729
+Val   - epoch:49, All Loss: 1.9176, Lab Loss: 1.8960, Recon Loss: 0.0096, Result: 0.64746
+Train - epoch:50, All Loss: 0.8191, Lab Loss: 0.6449, Recon Loss: 0.0744
+Val   - epoch:50, All Loss: 1.7342, Lab Loss: 1.7114, Recon Loss: 0.0109, Result: 0.62282
+Train - epoch:51, All Loss: 0.7298, Lab Loss: 0.5560, Recon Loss: 0.0734
+Val   - epoch:51, All Loss: 1.6998, Lab Loss: 1.6779, Recon Loss: 0.0106, Result: 0.61058
+Train - epoch:52, All Loss: 0.7052, Lab Loss: 0.5384, Recon Loss: 0.0662
+Val   - epoch:52, All Loss: 1.4563, Lab Loss: 1.4361, Recon Loss: 0.0087, Result: 0.56580
+Train - epoch:53, All Loss: 0.8096, Lab Loss: 0.6377, Recon Loss: 0.0711
+Val   - epoch:53, All Loss: 1.4555, Lab Loss: 1.4330, Recon Loss: 0.0125, Result: 0.57305
+Train - epoch:54, All Loss: 0.7648, Lab Loss: 0.5851, Recon Loss: 0.0834
+Val   - epoch:54, All Loss: 1.7992, Lab Loss: 1.7774, Recon Loss: 0.0116, Result: 0.61965
+Train - epoch:55, All Loss: 0.5642, Lab Loss: 0.4000, Recon Loss: 0.0622
+Val   - epoch:55, All Loss: 1.7104, Lab Loss: 1.6909, Recon Loss: 0.0104, Result: 0.60799
+Train - epoch:56, All Loss: 0.6671, Lab Loss: 0.5103, Recon Loss: 0.0661
+Val   - epoch:56, All Loss: 1.8704, Lab Loss: 1.8503, Recon Loss: 0.0104, Result: 0.63643
+Train - epoch:57, All Loss: 0.9549, Lab Loss: 0.7776, Recon Loss: 0.0949
+Val   - epoch:57, All Loss: 1.5764, Lab Loss: 1.5523, Recon Loss: 0.0146, Result: 0.60374
+Train - epoch:58, All Loss: 0.7007, Lab Loss: 0.5238, Recon Loss: 0.0766
+Val   - epoch:58, All Loss: 1.7424, Lab Loss: 1.7208, Recon Loss: 0.0100, Result: 0.62634
+Train - epoch:59, All Loss: 0.6185, Lab Loss: 0.4524, Recon Loss: 0.0720
+Val   - epoch:59, All Loss: 1.4437, Lab Loss: 1.4244, Recon Loss: 0.0093, Result: 0.57978
+Train - epoch:60, All Loss: 0.4973, Lab Loss: 0.3483, Recon Loss: 0.0566
+Val   - epoch:60, All Loss: 1.4122, Lab Loss: 1.3943, Recon Loss: 0.0078, Result: 0.56432
+Train - epoch:61, All Loss: 0.4643, Lab Loss: 0.3208, Recon Loss: 0.0585
+Val   - epoch:61, All Loss: 1.3542, Lab Loss: 1.3368, Recon Loss: 0.0102, Result: 0.54953
+*****************************************************************************Test result:0.6392593550685209********
+
+Train - epoch:62, All Loss: 0.4056, Lab Loss: 0.2708, Recon Loss: 0.0565
+Val   - epoch:62, All Loss: 1.4434, Lab Loss: 1.4265, Recon Loss: 0.0114, Result: 0.56585
+Train - epoch:63, All Loss: 0.4212, Lab Loss: 0.2925, Recon Loss: 0.0575
+Val   - epoch:63, All Loss: 1.3882, Lab Loss: 1.3726, Recon Loss: 0.0073, Result: 0.55866
+Train - epoch:64, All Loss: 0.3885, Lab Loss: 0.2643, Recon Loss: 0.0487
+Val   - epoch:64, All Loss: 1.4810, Lab Loss: 1.4659, Recon Loss: 0.0071, Result: 0.57144
+Train - epoch:65, All Loss: 0.3621, Lab Loss: 0.2456, Recon Loss: 0.0417
+Val   - epoch:65, All Loss: 1.3564, Lab Loss: 1.3419, Recon Loss: 0.0070, Result: 0.55023
+Train - epoch:66, All Loss: 0.3729, Lab Loss: 0.2577, Recon Loss: 0.0473
+Val   - epoch:66, All Loss: 1.4324, Lab Loss: 1.4179, Recon Loss: 0.0082, Result: 0.56755
+Train - epoch:67, All Loss: 0.3901, Lab Loss: 0.2743, Recon Loss: 0.0523
+Val   - epoch:67, All Loss: 1.4639, Lab Loss: 1.4498, Recon Loss: 0.0074, Result: 0.57115
+Train - epoch:68, All Loss: 0.3236, Lab Loss: 0.2115, Recon Loss: 0.0442
+Val   - epoch:68, All Loss: 1.5119, Lab Loss: 1.4978, Recon Loss: 0.0088, Result: 0.57488
+Train - epoch:69, All Loss: 0.3048, Lab Loss: 0.1948, Recon Loss: 0.0490
+Val   - epoch:69, All Loss: 1.5731, Lab Loss: 1.5590, Recon Loss: 0.0087, Result: 0.58942
+Train - epoch:70, All Loss: 0.2926, Lab Loss: 0.1890, Recon Loss: 0.0442
+Val   - epoch:70, All Loss: 1.8624, Lab Loss: 1.8497, Recon Loss: 0.0067, Result: 0.63301
+Train - epoch:71, All Loss: 0.3812, Lab Loss: 0.2800, Recon Loss: 0.0392
+Val   - epoch:71, All Loss: 1.4859, Lab Loss: 1.4730, Recon Loss: 0.0061, Result: 0.57789
+Train - epoch:72, All Loss: 0.2913, Lab Loss: 0.1908, Recon Loss: 0.0389
+Val   - epoch:72, All Loss: 1.5159, Lab Loss: 1.5030, Recon Loss: 0.0060, Result: 0.58565
+Train - epoch:73, All Loss: 0.3660, Lab Loss: 0.2623, Recon Loss: 0.0513
+Val   - epoch:73, All Loss: 1.5904, Lab Loss: 1.5770, Recon Loss: 0.0084, Result: 0.60259
+Train - epoch:74, All Loss: 0.5905, Lab Loss: 0.4772, Recon Loss: 0.0724
+Val   - epoch:74, All Loss: 1.3295, Lab Loss: 1.3143, Recon Loss: 0.0119, Result: 0.54636
+*****************************************************************************Test result:0.6389963586647163********
+
+Train - epoch:75, All Loss: 0.5448, Lab Loss: 0.4248, Recon Loss: 0.0766
+Val   - epoch:75, All Loss: 1.8660, Lab Loss: 1.8512, Recon Loss: 0.0101, Result: 0.64246
+Train - epoch:76, All Loss: 0.5706, Lab Loss: 0.4501, Recon Loss: 0.0524
+Val   - epoch:76, All Loss: 1.5056, Lab Loss: 1.4904, Recon Loss: 0.0081, Result: 0.58357
+Train - epoch:77, All Loss: 0.4365, Lab Loss: 0.3148, Recon Loss: 0.0490
+Val   - epoch:77, All Loss: 1.4763, Lab Loss: 1.4617, Recon Loss: 0.0069, Result: 0.56955
+Train - epoch:78, All Loss: 0.3292, Lab Loss: 0.2153, Recon Loss: 0.0407
+Val   - epoch:78, All Loss: 1.7023, Lab Loss: 1.6885, Recon Loss: 0.0066, Result: 0.61205
+Train - epoch:79, All Loss: 0.3198, Lab Loss: 0.2127, Recon Loss: 0.0406
+Val   - epoch:79, All Loss: 1.4408, Lab Loss: 1.4273, Recon Loss: 0.0062, Result: 0.56936
+Train - epoch:80, All Loss: 0.2728, Lab Loss: 0.1697, Recon Loss: 0.0398
+Val   - epoch:80, All Loss: 1.4778, Lab Loss: 1.4652, Recon Loss: 0.0066, Result: 0.56978
+Train - epoch:81, All Loss: 0.2319, Lab Loss: 0.1327, Recon Loss: 0.0388
+Val   - epoch:81, All Loss: 1.4847, Lab Loss: 1.4722, Recon Loss: 0.0072, Result: 0.58215
+Train - epoch:82, All Loss: 0.2385, Lab Loss: 0.1398, Recon Loss: 0.0387
+Val   - epoch:82, All Loss: 1.3946, Lab Loss: 1.3827, Recon Loss: 0.0065, Result: 0.55556
+Train - epoch:83, All Loss: 0.2628, Lab Loss: 0.1688, Recon Loss: 0.0370
+Val   - epoch:83, All Loss: 1.5207, Lab Loss: 1.5087, Recon Loss: 0.0065, Result: 0.58547
+Train - epoch:84, All Loss: 0.3098, Lab Loss: 0.2144, Recon Loss: 0.0416
+Val   - epoch:84, All Loss: 1.3837, Lab Loss: 1.3717, Recon Loss: 0.0064, Result: 0.55819
+Train - epoch:85, All Loss: 0.2738, Lab Loss: 0.1809, Recon Loss: 0.0341
+Val   - epoch:85, All Loss: 1.2634, Lab Loss: 1.2520, Recon Loss: 0.0053, Result: 0.53695
+*****************************************************************************Test result:0.6555260496098874********
+
+Train - epoch:86, All Loss: 0.2653, Lab Loss: 0.1732, Recon Loss: 0.0378
+Val   - epoch:86, All Loss: 1.3649, Lab Loss: 1.3538, Recon Loss: 0.0052, Result: 0.55334
+Train - epoch:87, All Loss: 0.2074, Lab Loss: 0.1175, Recon Loss: 0.0297
+Val   - epoch:87, All Loss: 1.4175, Lab Loss: 1.4063, Recon Loss: 0.0053, Result: 0.56492
+Train - epoch:88, All Loss: 0.2202, Lab Loss: 0.1315, Recon Loss: 0.0369
+Val   - epoch:88, All Loss: 1.3940, Lab Loss: 1.3828, Recon Loss: 0.0073, Result: 0.56545
+Train - epoch:89, All Loss: 0.2399, Lab Loss: 0.1513, Recon Loss: 0.0387
+Val   - epoch:89, All Loss: 1.4397, Lab Loss: 1.4289, Recon Loss: 0.0054, Result: 0.56608
+Train - epoch:90, All Loss: 0.2130, Lab Loss: 0.1278, Recon Loss: 0.0349
+Val   - epoch:90, All Loss: 1.3898, Lab Loss: 1.3792, Recon Loss: 0.0060, Result: 0.55443
+Train - epoch:91, All Loss: 0.2180, Lab Loss: 0.1350, Recon Loss: 0.0343
+Val   - epoch:91, All Loss: 1.3255, Lab Loss: 1.3153, Recon Loss: 0.0053, Result: 0.54230
+Train - epoch:92, All Loss: 0.2548, Lab Loss: 0.1723, Recon Loss: 0.0340
+Val   - epoch:92, All Loss: 1.4324, Lab Loss: 1.4218, Recon Loss: 0.0061, Result: 0.56762
+Train - epoch:93, All Loss: 0.2069, Lab Loss: 0.1247, Recon Loss: 0.0311
+Val   - epoch:93, All Loss: 1.3908, Lab Loss: 1.3807, Recon Loss: 0.0045, Result: 0.56148
+Train - epoch:94, All Loss: 0.2287, Lab Loss: 0.1467, Recon Loss: 0.0355
+Val   - epoch:94, All Loss: 1.4218, Lab Loss: 1.4115, Recon Loss: 0.0067, Result: 0.56658
+Train - epoch:95, All Loss: 0.2664, Lab Loss: 0.1843, Recon Loss: 0.0358
+Val   - epoch:95, All Loss: 1.4097, Lab Loss: 1.3992, Recon Loss: 0.0054, Result: 0.56952
+Train - epoch:96, All Loss: 0.3603, Lab Loss: 0.2692, Recon Loss: 0.0546
+Val   - epoch:96, All Loss: 1.3889, Lab Loss: 1.3774, Recon Loss: 0.0094, Result: 0.55540
+Train - epoch:97, All Loss: 0.2021, Lab Loss: 0.1150, Recon Loss: 0.0371
+Val   - epoch:97, All Loss: 1.3857, Lab Loss: 1.3754, Recon Loss: 0.0046, Result: 0.55781
+Train - epoch:98, All Loss: 0.1760, Lab Loss: 0.0946, Recon Loss: 0.0282
+Val   - epoch:98, All Loss: 1.3744, Lab Loss: 1.3644, Recon Loss: 0.0046, Result: 0.56558
+Train - epoch:99, All Loss: 0.1838, Lab Loss: 0.1046, Recon Loss: 0.0265
+Val   - epoch:99, All Loss: 1.4986, Lab Loss: 1.4888, Recon Loss: 0.0049, Result: 0.57741
+Train - epoch:100, All Loss: 0.1807, Lab Loss: 0.1012, Recon Loss: 0.0289
+Val   - epoch:100, All Loss: 1.4619, Lab Loss: 1.4522, Recon Loss: 0.0046, Result: 0.57078
+Train - epoch:101, All Loss: 0.2133, Lab Loss: 0.1363, Recon Loss: 0.0270
+Val   - epoch:101, All Loss: 1.9083, Lab Loss: 1.8983, Recon Loss: 0.0065, Result: 0.64640
+Train - epoch:102, All Loss: 0.4765, Lab Loss: 0.3841, Recon Loss: 0.0669
+Val   - epoch:102, All Loss: 1.4344, Lab Loss: 1.4225, Recon Loss: 0.0073, Result: 0.57716
+Train - epoch:103, All Loss: 0.2613, Lab Loss: 0.1750, Recon Loss: 0.0380
+Val   - epoch:103, All Loss: 1.4276, Lab Loss: 1.4171, Recon Loss: 0.0056, Result: 0.56853
+Train - epoch:104, All Loss: 0.1834, Lab Loss: 0.1023, Recon Loss: 0.0300
+Val   - epoch:104, All Loss: 1.4330, Lab Loss: 1.4231, Recon Loss: 0.0045, Result: 0.56737
+Train - epoch:105, All Loss: 0.1915, Lab Loss: 0.1123, Recon Loss: 0.0294
+Val   - epoch:105, All Loss: 1.3737, Lab Loss: 1.3641, Recon Loss: 0.0043, Result: 0.56077
+Train - epoch:106, All Loss: 0.1725, Lab Loss: 0.0952, Recon Loss: 0.0269
+Val   - epoch:106, All Loss: 1.3501, Lab Loss: 1.3406, Recon Loss: 0.0044, Result: 0.55654
+Train - epoch:107, All Loss: 0.1655, Lab Loss: 0.0898, Recon Loss: 0.0259
+Val   - epoch:107, All Loss: 1.2948, Lab Loss: 1.2856, Recon Loss: 0.0040, Result: 0.54483
+Train - epoch:108, All Loss: 0.1819, Lab Loss: 0.1058, Recon Loss: 0.0258
+Val   - epoch:108, All Loss: 1.3499, Lab Loss: 1.3404, Recon Loss: 0.0050, Result: 0.55295
+Train - epoch:109, All Loss: 0.2229, Lab Loss: 0.1468, Recon Loss: 0.0292
+Val   - epoch:109, All Loss: 1.3748, Lab Loss: 1.3655, Recon Loss: 0.0054, Result: 0.56066
+Train - epoch:110, All Loss: 0.2369, Lab Loss: 0.1562, Recon Loss: 0.0397
+Val   - epoch:110, All Loss: 1.3531, Lab Loss: 1.3426, Recon Loss: 0.0056, Result: 0.55895
+Train - epoch:111, All Loss: 0.1712, Lab Loss: 0.0943, Recon Loss: 0.0301
+Val   - epoch:111, All Loss: 1.3330, Lab Loss: 1.3239, Recon Loss: 0.0039, Result: 0.55190
+Train - epoch:112, All Loss: 0.1505, Lab Loss: 0.0791, Recon Loss: 0.0232
+Val   - epoch:112, All Loss: 1.3351, Lab Loss: 1.3264, Recon Loss: 0.0037, Result: 0.55105
+Train - epoch:113, All Loss: 0.1288, Lab Loss: 0.0594, Recon Loss: 0.0222
+Val   - epoch:113, All Loss: 1.4244, Lab Loss: 1.4158, Recon Loss: 0.0040, Result: 0.56550
+Train - epoch:114, All Loss: 0.1414, Lab Loss: 0.0731, Recon Loss: 0.0244
+Val   - epoch:114, All Loss: 1.3619, Lab Loss: 1.3533, Recon Loss: 0.0041, Result: 0.56212
+Train - epoch:115, All Loss: 0.1477, Lab Loss: 0.0803, Recon Loss: 0.0247
+Val   - epoch:115, All Loss: 1.3788, Lab Loss: 1.3704, Recon Loss: 0.0037, Result: 0.56136
+Train - epoch:116, All Loss: 0.1357, Lab Loss: 0.0696, Recon Loss: 0.0220
+Val   - epoch:116, All Loss: 1.3755, Lab Loss: 1.3673, Recon Loss: 0.0037, Result: 0.55761
+Train - epoch:117, All Loss: 0.1297, Lab Loss: 0.0643, Recon Loss: 0.0239
+Val   - epoch:117, All Loss: 1.3228, Lab Loss: 1.3146, Recon Loss: 0.0041, Result: 0.54687
+Train - epoch:118, All Loss: 0.1338, Lab Loss: 0.0698, Recon Loss: 0.0225
+Val   - epoch:118, All Loss: 1.3565, Lab Loss: 1.3485, Recon Loss: 0.0037, Result: 0.55367
+Train - epoch:119, All Loss: 0.1253, Lab Loss: 0.0615, Recon Loss: 0.0224
+Val   - epoch:119, All Loss: 1.3284, Lab Loss: 1.3204, Recon Loss: 0.0041, Result: 0.55002
+Train - epoch:120, All Loss: 0.1190, Lab Loss: 0.0555, Recon Loss: 0.0236
+Val   - epoch:120, All Loss: 1.3891, Lab Loss: 1.3813, Recon Loss: 0.0038, Result: 0.56071
+Train - epoch:121, All Loss: 0.1292, Lab Loss: 0.0665, Recon Loss: 0.0255
+Val   - epoch:121, All Loss: 1.2933, Lab Loss: 1.2857, Recon Loss: 0.0036, Result: 0.54275
+Train - epoch:122, All Loss: 0.1407, Lab Loss: 0.0797, Recon Loss: 0.0225
+Val   - epoch:122, All Loss: 1.3807, Lab Loss: 1.3730, Recon Loss: 0.0036, Result: 0.56067
+Train - epoch:123, All Loss: 0.1226, Lab Loss: 0.0614, Recon Loss: 0.0230
+Val   - epoch:123, All Loss: 1.3280, Lab Loss: 1.3204, Recon Loss: 0.0044, Result: 0.55372
+Train - epoch:124, All Loss: 0.1215, Lab Loss: 0.0605, Recon Loss: 0.0258
+Val   - epoch:124, All Loss: 1.3581, Lab Loss: 1.3506, Recon Loss: 0.0036, Result: 0.55300
+Train - epoch:125, All Loss: 0.1220, Lab Loss: 0.0631, Recon Loss: 0.0207
+Val   - epoch:125, All Loss: 1.3479, Lab Loss: 1.3404, Recon Loss: 0.0037, Result: 0.55171
+Train - epoch:126, All Loss: 0.1064, Lab Loss: 0.0462, Recon Loss: 0.0209
+Val   - epoch:126, All Loss: 1.3025, Lab Loss: 1.2952, Recon Loss: 0.0033, Result: 0.54589
+Train - epoch:127, All Loss: 0.1042, Lab Loss: 0.0467, Recon Loss: 0.0192
+Val   - epoch:127, All Loss: 1.3730, Lab Loss: 1.3658, Recon Loss: 0.0033, Result: 0.55725
+Train - epoch:128, All Loss: 0.1120, Lab Loss: 0.0550, Recon Loss: 0.0213
+Val   - epoch:128, All Loss: 1.3293, Lab Loss: 1.3220, Recon Loss: 0.0039, Result: 0.55110
+Train - epoch:129, All Loss: 0.1100, Lab Loss: 0.0530, Recon Loss: 0.0227
+Val   - epoch:129, All Loss: 1.3281, Lab Loss: 1.3210, Recon Loss: 0.0036, Result: 0.54903
+Train - epoch:130, All Loss: 0.1168, Lab Loss: 0.0601, Recon Loss: 0.0209
+Val   - epoch:130, All Loss: 1.3702, Lab Loss: 1.3632, Recon Loss: 0.0034, Result: 0.55435
+Train - epoch:131, All Loss: 0.1104, Lab Loss: 0.0548, Recon Loss: 0.0205
+Val   - epoch:131, All Loss: 1.3782, Lab Loss: 1.3713, Recon Loss: 0.0032, Result: 0.55697
+Train - epoch:132, All Loss: 0.1124, Lab Loss: 0.0578, Recon Loss: 0.0196
+Val   - epoch:132, All Loss: 1.3143, Lab Loss: 1.3074, Recon Loss: 0.0034, Result: 0.54815
+Train - epoch:133, All Loss: 0.0972, Lab Loss: 0.0426, Recon Loss: 0.0192
+Val   - epoch:133, All Loss: 1.3700, Lab Loss: 1.3632, Recon Loss: 0.0033, Result: 0.55607
+Train - epoch:134, All Loss: 0.0975, Lab Loss: 0.0435, Recon Loss: 0.0192
+Val   - epoch:134, All Loss: 1.3584, Lab Loss: 1.3517, Recon Loss: 0.0031, Result: 0.55461
+Train - epoch:135, All Loss: 0.0923, Lab Loss: 0.0394, Recon Loss: 0.0182
+Val   - epoch:135, All Loss: 1.3012, Lab Loss: 1.2945, Recon Loss: 0.0031, Result: 0.54323
+Train - epoch:136, All Loss: 0.1129, Lab Loss: 0.0600, Recon Loss: 0.0196
+Val   - epoch:136, All Loss: 1.4041, Lab Loss: 1.3974, Recon Loss: 0.0033, Result: 0.56303
+Train - epoch:137, All Loss: 0.1228, Lab Loss: 0.0702, Recon Loss: 0.0199
+Val   - epoch:137, All Loss: 1.3754, Lab Loss: 1.3688, Recon Loss: 0.0032, Result: 0.55718
+Train - epoch:138, All Loss: 0.1271, Lab Loss: 0.0739, Recon Loss: 0.0208
+Val   - epoch:138, All Loss: 1.3450, Lab Loss: 1.3383, Recon Loss: 0.0036, Result: 0.55252
+Train - epoch:139, All Loss: 0.1008, Lab Loss: 0.0481, Recon Loss: 0.0191
+Val   - epoch:139, All Loss: 1.3501, Lab Loss: 1.3435, Recon Loss: 0.0034, Result: 0.55325
+Train - epoch:140, All Loss: 0.1130, Lab Loss: 0.0605, Recon Loss: 0.0210
+Val   - epoch:140, All Loss: 1.3460, Lab Loss: 1.3393, Recon Loss: 0.0035, Result: 0.55142
+Train - epoch:141, All Loss: 0.0970, Lab Loss: 0.0431, Recon Loss: 0.0202
+Val   - epoch:141, All Loss: 1.3026, Lab Loss: 1.2961, Recon Loss: 0.0034, Result: 0.54566
+Train - epoch:142, All Loss: 0.0966, Lab Loss: 0.0453, Recon Loss: 0.0213
+Val   - epoch:142, All Loss: 1.3134, Lab Loss: 1.3069, Recon Loss: 0.0036, Result: 0.54694
+Train - epoch:143, All Loss: 0.0856, Lab Loss: 0.0350, Recon Loss: 0.0199
+Val   - epoch:143, All Loss: 1.3195, Lab Loss: 1.3131, Recon Loss: 0.0035, Result: 0.54962
+Train - epoch:144, All Loss: 0.0927, Lab Loss: 0.0428, Recon Loss: 0.0192
+Val   - epoch:144, All Loss: 1.2914, Lab Loss: 1.2850, Recon Loss: 0.0036, Result: 0.54649
+Train - epoch:145, All Loss: 0.1137, Lab Loss: 0.0636, Recon Loss: 0.0205
+Val   - epoch:145, All Loss: 1.3071, Lab Loss: 1.3004, Recon Loss: 0.0049, Result: 0.54762
+Train - epoch:146, All Loss: 0.1069, Lab Loss: 0.0565, Recon Loss: 0.0232
+Val   - epoch:146, All Loss: 1.3260, Lab Loss: 1.3195, Recon Loss: 0.0042, Result: 0.55125
+Train - epoch:147, All Loss: 0.1022, Lab Loss: 0.0523, Recon Loss: 0.0216
+Val   - epoch:147, All Loss: 1.3005, Lab Loss: 1.2941, Recon Loss: 0.0032, Result: 0.54812
+Train - epoch:148, All Loss: 0.1216, Lab Loss: 0.0705, Recon Loss: 0.0221
+Val   - epoch:148, All Loss: 1.3272, Lab Loss: 1.3208, Recon Loss: 0.0036, Result: 0.54789
+Train - epoch:149, All Loss: 0.1275, Lab Loss: 0.0768, Recon Loss: 0.0249
+Val   - epoch:149, All Loss: 1.3133, Lab Loss: 1.3064, Recon Loss: 0.0057, Result: 0.54449

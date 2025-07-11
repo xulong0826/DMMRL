@@ -1,19 +1,11 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-'''
-@author: Vencent_Wang
-@contact: Vencent_Wang@outlook.com
-@file: multi_modal.py
-@time: 2023/8/13 20:05
-@desc:
-'''
 import math
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
+from torch import Tensor
 from torch_geometric.nn import global_mean_pool, GlobalAttention
+from torch.nn import init
+from torch.nn.parameter import Parameter
 from models_lib.gnn_model import MPNEncoder
 from models_lib.gem_model import GeoGNNModel
 from models_lib.seq_model import TrfmSeq2seq
@@ -28,112 +20,93 @@ class Global_Attention(nn.Module):
     def forward(self, x, batch):
         return self.at(x, batch)
 
-# class DoubleWeightFusion(nn.Module):
-class DoubleWeightFusion(nn.Module):
-    """
-    多模态门控+多头注意力融合。
-    输入: shared_list, 每个元素 shape [batch, shared_dim]
-    输出: 融合后的特征 [batch, out_dim]
-    """
-    def __init__(self, num_modalities, shared_dim=192, out_dim=192, num_heads=4, dropout=0.1, bias=True, device=None, dtype=None):
-        super().__init__()
-        self.num_modalities = num_modalities
-        self.shared_dim = shared_dim
-        self.out_dim = out_dim
-        self.num_heads = num_heads
+class WeightFusion(nn.Module):
 
-        self.attn = nn.MultiheadAttention(embed_dim=shared_dim, num_heads=num_heads, dropout=dropout, batch_first=True)
-        self.proj = nn.Linear(shared_dim, out_dim, bias=bias)
-        self.dropout = nn.Dropout(dropout)
-        # 门控参数，每个模态一个gate
-        self.gate = nn.Parameter(torch.zeros(num_modalities))
+    def __init__(self, feat_views, feat_dim, bias: bool = True, device=None, dtype=None) -> None:
+        factory_kwargs = {'device': device, 'dtype': dtype}
+        super(WeightFusion, self).__init__()
+        self.feat_views = feat_views
+        self.feat_dim = feat_dim
+        self.weight = Parameter(torch.empty((1, 1, feat_views), **factory_kwargs))
+        if bias:
+            self.bias = Parameter(torch.empty(int(feat_dim), **factory_kwargs))
+        else:
+            self.register_parameter('bias', None)
+        self.reset_parameters()
 
-    def forward(self, shared_list):
-        device = shared_list[0].device
-        self.attn.to(device)
-        self.proj.to(device)
-        self.dropout.to(device)
-        # self.gate = self.gate.to(device)  # 不要这样！
+    def reset_parameters(self) -> None:
+        init.kaiming_uniform_(self.weight, a=math.sqrt(5))
+        if self.bias is not None:
+            fan_in, _ = init._calculate_fan_in_and_fan_out(self.weight)
+            bound = 1 / math.sqrt(fan_in) if fan_in > 0 else 0
+            init.uniform_(self.bias, -bound, bound)
 
-        x = torch.stack([s.to(device) for s in shared_list], dim=1)  # [batch, num_modalities, shared_dim]
-        attn_out, _ = self.attn(x, x, x)  # [batch, num_modalities, shared_dim]
+    def forward(self, input: Tensor) -> Tensor:
 
-        # 门控权重，softmax归一化
-        gate_weights = torch.softmax(self.gate, dim=0).to(device)  # [num_modalities] -> [num_modalities] on correct device
-        gate_weights = gate_weights.view(1, -1, 1)      # [1, num_modalities, 1]
+        return sum([input[i]*weight for i, weight in enumerate(self.weight[0][0])]) + self.bias
 
-        fused = (attn_out * gate_weights).sum(dim=1)    # [batch, shared_dim]
-        fused = self.dropout(fused)
-        fused = self.proj(fused)
-        return fused
-
-# class WeightedSumFusion(nn.Module):
-# class DoubleWeightFusion(nn.Module):
-#     """
-#     普通加权和融合：每个模态一个可学习权重和偏置。
-#     输入: shared_list, 每个元素 shape [batch, shared_dim]
-#     输出: 融合后的特征 [batch, out_dim]
-#     """
-#     def __init__(self, num_modalities, shared_dim=192, out_dim=192, device=None, dtype=None):
+# class GatedAttentionFusion(nn.Module):
+#     def __init__(
+#         self, num_modalities, shared_dim=192, out_dim=192, num_heads=4, dropout=0.1, bias=True,
+#         device=None, dtype=None, residual=True, use_layernorm=True, debug_nan=False
+#     ):
 #         super().__init__()
 #         self.num_modalities = num_modalities
 #         self.shared_dim = shared_dim
 #         self.out_dim = out_dim
-#         self.weights = nn.Parameter(torch.ones(num_modalities))
-#         self.proj = nn.Linear(shared_dim, out_dim, bias=True)
-#         if device is not None:
-#             self.to(device)
+#         self.num_heads = num_heads
+#         self.residual = residual
+#         self.debug_nan = debug_nan
+
+#         factory_kwargs = {'device': device, 'dtype': dtype}
+#         self.attn = nn.MultiheadAttention(embed_dim=shared_dim, num_heads=num_heads, dropout=dropout, batch_first=True, **factory_kwargs)
+#         self.proj = nn.Linear(shared_dim, out_dim, bias=bias, **factory_kwargs)
+#         self.dropout = nn.Dropout(dropout)
+#         self.gate = nn.Parameter(torch.full((num_modalities,), 0.1, **{k: v for k, v in factory_kwargs.items() if v is not None}))
+#         self.use_layernorm = use_layernorm
+#         if use_layernorm:
+#             self.ln = nn.LayerNorm(out_dim, **factory_kwargs)
+
+#         self.reset_parameters()
+
+#     def reset_parameters(self):
+#         nn.init.xavier_uniform_(self.proj.weight)
+#         if self.proj.bias is not None:
+#             nn.init.zeros_(self.proj.bias)
+#         nn.init.xavier_uniform_(self.attn.in_proj_weight)
+#         nn.init.zeros_(self.attn.in_proj_bias)
+#         nn.init.constant_(self.gate, 0.1)
+#         if hasattr(self, "ln"):
+#             self.ln.reset_parameters()
 
 #     def forward(self, shared_list):
 #         x = torch.stack(shared_list, dim=1)  # [batch, num_modalities, shared_dim]
-#         device = x.device
-#         w = torch.softmax(self.weights, dim=0).to(device).view(1, -1, 1)  # [1, num_modalities, 1]
-#         fused = (x * w).sum(dim=1)  # [batch, shared_dim]
-#         # NaN检查
-#         if torch.isnan(fused).any():
-#             raise ValueError("NaN detected in fusion output!")
+#         device, dtype = x.device, x.dtype
+#         attn_out, _ = self.attn(x, x, x)
+#         gate_weights = torch.softmax(self.gate, dim=0).to(device=device, dtype=dtype).view(1, -1, 1)
+#         fused = (attn_out * gate_weights).sum(dim=1)
+#         if self.residual:
+#             fused = fused + x.mean(dim=1)
+#         fused = self.dropout(fused)
 #         fused = self.proj(fused)
-#         return fused
-
-# class ConcatMLPFusion(nn.Module):
-# class DoubleWeightFusion(nn.Module):
-#     """
-#     拼接+MLP融合：将所有模态特征拼接后用MLP降维。
-#     """
-#     def __init__(self, num_modalities, shared_dim=192, out_dim=192, num_heads=4, dropout=0.1, bias=True, device=None, dtype=None, hidden_dim=256, norm=True):
-#         super().__init__()
-#         mlp_layers = [
-#             nn.Linear(num_modalities * shared_dim, hidden_dim, bias=bias),
-#             nn.ReLU()
-#         ]
-#         if norm:
-#             mlp_layers.append(nn.LayerNorm(hidden_dim))
-#         mlp_layers.append(nn.Dropout(dropout))
-#         mlp_layers.append(nn.Linear(hidden_dim, out_dim, bias=bias))
-#         self.mlp = nn.Sequential(*mlp_layers)
-#         if device is not None:
-#             self.mlp.to(device)
-
-#     def forward(self, shared_list):
-#         device = self.mlp[0].weight.device
-#         x = torch.cat([s.to(device) for s in shared_list], dim=1)
-#         fused = self.mlp(x)
+#         if self.use_layernorm:
+#             fused = self.ln(fused)
+#         if self.debug_nan and torch.isnan(fused).any():
+#             raise ValueError("NaN detected in GatedAttentionFusion output!")
 #         return fused
 
 class VAEHead(nn.Module):
-    """
-    多模态特征解耦的VAE模块，输出共享/私有隐变量及其高斯参数，并支持重参数化采样。
-    """
     def __init__(self, in_dim, shared_dim, private_dim, hidden_dim=512, dropout=0.1, out_act=None, norm=True):
         super().__init__()
         encoder_layers = [
             nn.Linear(in_dim, hidden_dim),
-            nn.ReLU()
+            nn.ReLU(),
         ]
         if norm:
             encoder_layers.append(nn.LayerNorm(hidden_dim))
         encoder_layers.append(nn.Dropout(dropout))
-        self.encoder = nn.Sequential(*encoder_layers)
+        self.encoder_shared = nn.Sequential(*encoder_layers)
+        self.encoder_private = nn.Sequential(*encoder_layers)
 
         self.fc_mu_shared = nn.Linear(hidden_dim, shared_dim)
         self.fc_logvar_shared = nn.Linear(hidden_dim, shared_dim)
@@ -142,7 +115,7 @@ class VAEHead(nn.Module):
 
         decoder_layers = [
             nn.Linear(shared_dim + private_dim, hidden_dim),
-            nn.ReLU()
+            nn.ReLU(),
         ]
         if norm:
             decoder_layers.append(nn.LayerNorm(hidden_dim))
@@ -160,19 +133,22 @@ class VAEHead(nn.Module):
             return mu
 
     def forward(self, x):
-        h = self.encoder(x)
-        mu_shared = self.fc_mu_shared(h)
-        # clamp logvar，防止数值溢出
-        logvar_shared = torch.clamp(self.fc_logvar_shared(h), min=-10, max=10)
-        mu_private = self.fc_mu_private(h)
-        logvar_private = torch.clamp(self.fc_logvar_private(h), min=-10, max=10)
+        assert not torch.isnan(x).any(), "NaN in VAE input x"
+        h_shared = self.encoder_shared(x)
+        h_private = self.encoder_private(x)
+        # assert not torch.isnan(h).any(), "NaN in VAE encoder output h"
+        mu_shared = self.fc_mu_shared(h_shared)
+        logvar_shared = torch.clamp(self.fc_logvar_shared(h_shared), min=-10, max=10)
+        mu_private = self.fc_mu_private(h_private)
+        logvar_private = torch.clamp(self.fc_logvar_private(h_private), min=-10, max=10)
+        assert not torch.isnan(mu_shared).any(), "NaN in mu_shared"
+        assert not torch.isnan(logvar_shared).any(), "NaN in logvar_shared"
+        assert not torch.isnan(mu_private).any(), "NaN in mu_private"
+        assert not torch.isnan(logvar_private).any(), "NaN in logvar_private"
         z_shared = self.reparameterize(mu_shared, logvar_shared)
         z_private = self.reparameterize(mu_private, logvar_private)
         z = torch.cat([z_shared, z_private], dim=1)
         recon_x = self.decoder(z)
-        # if self.out_act == 'sigmoid':
-        #     recon_x = torch.sigmoid(recon_x)
-        # NaN检查
         if torch.isnan(z_shared).any() or torch.isnan(z_private).any():
             raise ValueError("NaN detected in VAE latent variables!")
         return z_shared, z_private, recon_x, mu_shared, logvar_shared, mu_private, logvar_private
@@ -202,16 +178,35 @@ class Multi_modal(nn.Module):
         self.seq_ae = VAEHead(args.seq_hidden_dim, self.shared_dim, self.private_dim, norm=bool(args.norm)).to(device)
         self.geo_ae = VAEHead(args.geo_hidden_dim, self.shared_dim, self.private_dim, norm=bool(args.norm)).to(device)
 
+        # 投影私有空间到共享空间维度，便于正交损失
+        self.private2shared_proj = nn.Linear(self.private_dim, self.shared_dim).to(device)
+
         if args.pro_num == 3:
-            self.pro_seq = nn.Sequential(nn.Linear(self.shared_dim, self.latent_dim), nn.ReLU(inplace=True),
-                                         nn.Linear(self.latent_dim, self.latent_dim)).to(device)
-            self.pro_gnn = nn.Sequential(nn.Linear(self.shared_dim, self.latent_dim), nn.ReLU(inplace=True),
-                                         nn.Linear(self.latent_dim, self.latent_dim)).to(device)
-            self.pro_geo = nn.Sequential(nn.Linear(self.shared_dim, self.latent_dim), nn.ReLU(inplace=True),
-                                         nn.Linear(self.latent_dim, self.latent_dim)).to(device)
+            self.pro_seq = nn.Sequential(
+                nn.Linear(self.shared_dim, self.latent_dim), nn.ReLU(inplace=True),
+                nn.LayerNorm(self.latent_dim),  # 统一加LayerNorm
+                nn.Linear(self.latent_dim, self.latent_dim), nn.ReLU(inplace=True),
+                nn.LayerNorm(self.latent_dim)
+            ).to(device)
+            self.pro_gnn = nn.Sequential(
+                nn.Linear(self.shared_dim, self.latent_dim), nn.ReLU(inplace=True),
+                nn.LayerNorm(self.latent_dim),
+                nn.Linear(self.latent_dim, self.latent_dim), nn.ReLU(inplace=True),
+                nn.LayerNorm(self.latent_dim)
+            ).to(device)
+            self.pro_geo = nn.Sequential(
+                nn.Linear(self.shared_dim, self.latent_dim), nn.ReLU(inplace=True),
+                nn.LayerNorm(self.latent_dim),
+                nn.Linear(self.latent_dim, self.latent_dim), nn.ReLU(inplace=True),
+                nn.LayerNorm(self.latent_dim)
+            ).to(device)
         elif args.pro_num == 1:
-            self.pro_seq = nn.Sequential(nn.Linear(self.shared_dim, self.latent_dim), nn.ReLU(inplace=True),
-                                         nn.Linear(self.latent_dim, self.latent_dim)).to(device)
+            self.pro_seq = nn.Sequential(
+                nn.Linear(self.shared_dim, self.latent_dim), nn.ReLU(inplace=True),
+                nn.LayerNorm(self.latent_dim),
+                nn.Linear(self.latent_dim, self.latent_dim), nn.ReLU(inplace=True),
+                nn.LayerNorm(self.latent_dim)
+            ).to(device)
             self.pro_gnn = self.pro_seq
             self.pro_geo = self.pro_seq
 
@@ -226,16 +221,19 @@ class Multi_modal(nn.Module):
                      args.geo_hidden_dim * self.geometry
         if self.args.fusion == 3:
             fusion_dim = fusion_dim // (self.graph + self.sequence + self.geometry)
-            self.fusion = DoubleWeightFusion(self.graph + self.sequence + self.geometry, self.shared_dim, self.shared_dim, device=self.device)
+            self.fusion = WeightFusion(self.graph + self.sequence + self.geometry, fusion_dim, device=self.device)
+            #self.fusion = GatedAttentionFusion(self.graph + self.sequence + self.geometry, self.shared_dim, self.shared_dim, device=self.device)
         elif self.args.fusion == 2 or self.args.fusion == 0:
             fusion_dim = args.seq_hidden_dim
 
         self.dropout = nn.Dropout(args.dropout)
-        self.output_layer = nn.Sequential(
-            nn.Linear(int(self.shared_dim), int(self.shared_dim)//2), nn.ReLU(), nn.Dropout(args.dropout),
-            nn.Linear(int(self.shared_dim)//2, int(self.shared_dim)//2), nn.ReLU(), nn.Dropout(args.dropout),
-            nn.Linear(int(self.shared_dim //2), args.output_dim)
-        ).to(self.device)
+        self.output_layer = nn.Sequential(nn.Linear(int(fusion_dim), int(fusion_dim)), nn.ReLU(), nn.Dropout(args.dropout),
+                                          nn.Linear(int(fusion_dim), args.output_dim)).to(self.device)
+        # self.output_layer = nn.Sequential(
+        #     nn.Linear(self.shared_dim, self.shared_dim//2), nn.ReLU(),
+        #     nn.LayerNorm(self.shared_dim//2),
+        #     nn.Linear(self.shared_dim//2, args.output_dim)
+        # ).to(self.device)
 
     def forward(self, trans_batch_seq, seq_mask, batch_mask_seq, gnn_batch_graph, gnn_feature_batch, batch_mask_gnn,
                 graph_dict, node_id_all, edge_id_all):
@@ -246,6 +244,7 @@ class Multi_modal(nn.Module):
 
         if self.graph:
             node_gnn_x = self.gnn(gnn_batch_graph, gnn_feature_batch, batch_mask_gnn)
+            node_gnn_x = F.layer_norm(node_gnn_x, node_gnn_x.shape[-1:])  # 统一正则化
             graph_gnn_x = self.pool(node_gnn_x, batch_mask_gnn)
             z_shared, z_private, recon, mu_s, logvar_s, mu_p, logvar_p = self.gnn_ae(graph_gnn_x)
             shared_list.append(z_shared)
@@ -258,6 +257,7 @@ class Multi_modal(nn.Module):
             orig_list.append(graph_gnn_x)
         if self.sequence:
             nloss, node_seq_x = self.transformer(trans_batch_seq)
+            node_seq_x = F.layer_norm(node_seq_x, node_seq_x.shape[-1:])
             graph_seq_x = self.pool(node_seq_x[seq_mask], batch_mask_seq)
             z_shared, z_private, recon, mu_s, logvar_s, mu_p, logvar_p = self.seq_ae(graph_seq_x)
             shared_list.append(z_shared)
@@ -270,6 +270,7 @@ class Multi_modal(nn.Module):
             orig_list.append(graph_seq_x)
         if self.geometry:
             node_repr, edge_repr = self.compound_encoder(graph_dict[0], graph_dict[1], node_id_all, edge_id_all)
+            node_repr = F.layer_norm(node_repr, node_repr.shape[-1:])
             graph_geo_x = self.pool(node_repr, node_id_all[0])
             z_shared, z_private, recon, mu_s, logvar_s, mu_p, logvar_p = self.geo_ae(graph_geo_x)
             shared_list.append(z_shared)
@@ -284,7 +285,6 @@ class Multi_modal(nn.Module):
         molecule_emb = self.fusion(shared_list)
         molecule_emb = self.dropout(molecule_emb)
         preds = self.output_layer(molecule_emb)
-        # NaN检查，便于调试
         if torch.isnan(preds).any():
             raise ValueError("NaN detected in preds!")
         return shared_list, private_list, preds, recon_list, orig_list, mu_shared_list, logvar_shared_list, mu_private_list, logvar_private_list
@@ -301,54 +301,16 @@ class Multi_modal(nn.Module):
         kl = sum([-0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp()) / mu.size(0)
                   for mu, logvar in zip(mu_list, logvar_list)]) / len(mu_list)
         return kl
-    
-    # def ortho_loss(self, z_shared_list, z_private_list):
-    #     # 对每个模态，计算共享和私有隐变量的相关性
-    #     loss = 0
-    #     for z_s, z_p in zip(z_shared_list, z_private_list):
-    #         # [batch, dim]
-    #         # 归一化后做内积
-    #         z_s = F.normalize(z_s, dim=1)
-    #         z_p = F.normalize(z_p, dim=1)
-    #         loss += (z_s * z_p).sum(dim=1).pow(2).mean()
-    #     return loss / len(z_shared_list)
-    
-    # def ortho_loss(self, z_shared_list, z_private_list):
-    #     loss = 0
-    #     for z_s, z_p in zip(z_shared_list, z_private_list):
-    #         z_s = F.normalize(z_s, dim=1)
-    #         z_p = F.normalize(z_p, dim=1)
-    #         corr = (z_s * z_p).sum(dim=1) / (z_s.norm(dim=1) * z_p.norm(dim=1) + 1e-8)
-    #         loss += corr.pow(2).mean()
-    #     return loss / len(z_shared_list)
-    def rbf_kernel(self, x, sigma=1.0):
-        x_norm = (x ** 2).sum(dim=1).view(-1, 1)
-        dist = x_norm + x_norm.t() - 2.0 * torch.mm(x, x.t())
-        k = torch.exp(-dist / (2 * sigma ** 2))
-        return k
 
-    def ortho_loss(self, z_shared_list, z_private_list, sigma=1.0):
-    #def hsic_loss(self, z_shared_list, z_private_list, sigma=1.0):
+    def ortho_loss(self, z_shared_list, z_private_list):
         loss = 0
         for z_s, z_p in zip(z_shared_list, z_private_list):
-            K = self.rbf_kernel(z_s)
-            L = self.rbf_kernel(z_p)
-            n = K.size(0)
-            H = torch.eye(n, device=K.device) - 1.0 / n
-            Kc = torch.mm(torch.mm(H, K), H)
-            Lc = torch.mm(torch.mm(H, L), H)
-            hsic = (Kc * Lc).sum() / ((n - 1) ** 2)
-            loss += hsic
+            z_s = F.normalize(z_s, dim=1)
+            z_p_proj = self.private2shared_proj(z_p)
+            z_p_proj = F.normalize(z_p_proj, dim=1)
+            corr = (z_s * z_p_proj).sum(dim=1)
+            loss += corr.pow(2).mean()
         return loss / len(z_shared_list)
-
-    # def align_loss(self, z_shared_list):
-    #     # 让不同模态的共享空间尽量一致
-    #     loss = 0
-    #     n = len(z_shared_list)
-    #     for i in range(n):
-    #         for j in range(i+1, n):
-    #             loss += F.mse_loss(z_shared_list[i], z_shared_list[j])
-    #     return loss / (n * (n-1) / 2)
 
     def align_loss(self, z_shared_list):
         loss = 0
@@ -361,16 +323,15 @@ class Multi_modal(nn.Module):
 
     def loss_cal(self, preds, targets, mask, recon_list, orig_list, mu_shared_list, logvar_shared_list, mu_private_list, logvar_private_list,
                 z_shared_list, z_private_list,
-                recon_weight=0.2, beta_shared=0.01, beta_private=0.01, gamma_ortho=0.01, gamma_align=0.01):
+                recon_weight=0.2, beta_shared=0.01, beta_private=0.01, gamma_ortho=0.001, gamma_align=0.001):
         loss_label = self.label_loss(preds, targets, mask)
         recon_loss = self.ae_loss(recon_list, orig_list)
         kl_shared = self.kl_loss(mu_shared_list, logvar_shared_list)
         kl_private = self.kl_loss(mu_private_list, logvar_private_list)
         ortho = self.ortho_loss(z_shared_list, z_private_list)
         align = self.align_loss(z_shared_list)
-        total_loss = loss_label + recon_weight * recon_loss + beta_shared * kl_shared + beta_private * kl_private \
-                    + gamma_ortho * ortho + gamma_align * align
+        total_loss = loss_label + recon_weight * recon_loss + beta_shared * kl_shared + beta_private * kl_private + gamma_ortho * ortho + gamma_align * align
         # print(f"Total Loss: {total_loss.item():.4f}, Label Loss: {loss_label.item():.4f}, "
         #       f"Recon Loss: {recon_weight * recon_loss.item():.4f}, KL Shared: {beta_shared * kl_shared.item():.4f}, "
         #       f"KL Private: {beta_private * kl_private.item():.4f}, Ortho Loss: {gamma_ortho * ortho.item():.8f}, Align Loss: {gamma_align * align.item():.8f}")
-        return total_loss, loss_label, recon_loss#, ortho, align
+        return total_loss, loss_label, recon_loss

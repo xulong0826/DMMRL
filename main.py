@@ -275,6 +275,9 @@ def main(args):
                                                                      seq_data, seq_mask, datas, data_3d, device)
         #print(f"epoch:{epoch}, all_loss:{train_all_loss}, lab_loss:{train_lab_loss}, cl_loss:{train_cl_loss}")
         print(f"Train - epoch:{epoch}, All Loss: {train_all_loss:.4f}, Lab Loss: {train_lab_loss:.4f}, Recon Loss: {train_recon_loss:.4f}")
+        # for name, param in model.named_parameters():
+        #     if torch.isnan(param).any():
+        #         print(f"NaN in parameter {name} after training step!")
         # val
         model.eval()
         val_result, val_all_loss, val_lab_loss, val_cl_loss, model = val(args, epoch, model, scaler, val_sampler, seq_data,
@@ -286,7 +289,7 @@ def main(args):
             best_result = val_result
             #print("--min_val_loss:" + str(val_all_loss) + ", val_result:" + str(val_result))
             result = test(args, save_model, scaler, test_sampler, seq_data, seq_mask, datas, data_3d, device)
-            print("*************************************************************Test result:" + str(result) + "********\n")
+            print("*****************************************************************************Test result:" + str(result) + "********\n")
             if best_test is None or best_test < result:
                 best_test = result
                 best_epoch = epoch

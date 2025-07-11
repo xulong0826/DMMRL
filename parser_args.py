@@ -36,13 +36,16 @@ def get_args():
     parser.add_argument('--latent_dim', type=int, default=256)
 
     ''' Training'''
-    parser.add_argument('--lr', type=float, default=1e-3)  # 1e-3
+    parser.add_argument('--lr', type=float, default=3e-4)  # 1e-3
+    parser.add_argument('--max_lr', type=float, default=1e-3, help='Maximum learning rate (warmup/调度上限)')
+    parser.add_argument('--init_lr', type=float, default=3e-4, help='Initial learning rate (warmup起点)')
+    parser.add_argument('--final_lr', type=float, default=1e-4, help='Final learning rate (调度下限)')
     parser.add_argument('--bias', type=int, default=1)
     parser.add_argument('--norm', type=int, default=0)
     parser.add_argument('--epochs', type=int, default=150)
-    parser.add_argument('--max_lr', type=float, default=2e-3, help='Maximum learning rate')
-    parser.add_argument('--init_lr', type=float, default=1e-3, help='Initial learning rate')
-    parser.add_argument('--final_lr', type=float, default=1e-3, help='Final learning rate')
+    # parser.add_argument('--max_lr', type=float, default=2e-3, help='Maximum learning rate')
+    # parser.add_argument('--init_lr', type=float, default=1e-3, help='Initial learning rate')
+    # parser.add_argument('--final_lr', type=float, default=1e-3, help='Final learning rate')
     parser.add_argument('--cl_loss', type=float, default=0.1)
     parser.add_argument('--dropout', type=float, default=0.5)
     parser.add_argument('--pro_num', type=int, default=1)

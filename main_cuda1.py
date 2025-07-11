@@ -286,7 +286,7 @@ def main(args):
             best_result = val_result
             #print("--min_val_loss:" + str(val_all_loss) + ", val_result:" + str(val_result))
             result = test(args, save_model, scaler, test_sampler, seq_data, seq_mask, datas, data_3d, device)
-            print("*************************************************************Test result:" + str(result) + "********\n")
+            print("*****************************************************************************Test result:" + str(result) + "********\n")
             if best_test is None or best_test < result:
                 best_test = result
                 best_epoch = epoch
