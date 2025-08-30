@@ -1,0 +1,4 @@
+name: xl-dmmrl
+channels:
+  - defaults
+prefix: /home/ubuntu/miniconda3/envs/xl-dmmrl

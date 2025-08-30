@@ -1,0 +1,69 @@
+🔧 Command: main.py --dataset tox21 --task_type class --seed 2025 --gpu 1 --norm 0 --split_type random --batch_size 64 --vib_norm 0
+🔧 All print outputs will be saved to: ./LOGS/tox21/complete_output_20250828_220121.log
+Device set to : NVIDIA GeForce RTX 4060 Ti
+lr:0.001, cl_loss:0.1, cl_loss_num:0, pro_num:1, pool_type:attention, gnn_hidden_dim:256, batch_size:64, norm:0, fusion:3
+0: 95.75%, 1: 4.25%
+0: 96.49%, 1: 3.51%
+0: 88.27%, 1: 11.73%
+0: 94.85%, 1: 5.15%
+0: 87.20%, 1: 12.80%
+0: 94.97%, 1: 5.03%
+0: 97.12%, 1: 2.88%
+0: 83.85%, 1: 16.15%
+0: 96.27%, 1: 3.73%
+0: 94.25%, 1: 5.75%
+0: 84.20%, 1: 15.80%
+0: 93.76%, 1: 6.24%
+[GeoGNNModel] embed_dim:256
+[GeoGNNModel] dropout_rate:0.5
+[GeoGNNModel] layer_num:8
+[GeoGNNModel] readout:mean
+[GeoGNNModel] atom_names:['atomic_num', 'formal_charge', 'degree', 'chiral_tag', 'total_numHs', 'is_aromatic', 'hybridization']
+[GeoGNNModel] bond_names:['bond_dir', 'bond_type', 'is_in_ring']
+[GeoGNNModel] bond_float_names:['bond_length']
+[GeoGNNModel] bond_angle_float_names:['bond_angle']
+train model ...
+**Test result:0.6866710768383202
+
+**Test result:0.7061580208964012
+
+**Test result:0.7347618931988595
+
+**Test result:0.7251356869489406
+
+**Test result:0.7273040980702188
+
+**Test result:0.7608747991397976
+
+**Test result:0.7636674118384339
+
+**Test result:0.7656646717263174
+
+**Test result:0.787427548178262
+
+**Test result:0.7779200328090429
+
+**Test result:0.778798754751961
+
+**Test result:0.7976074487882231
+
+**Test result:0.7871412288785365
+
+**Test result:0.8002546834751012
+
+**Test result:0.8007426963283529
+
+**Test result:0.8046042478068848
+
+**Test result:0.8120164955189048
+
+**Test result:0.8091821837280923
+
+**Test result:0.8051142684553491
+
+**Test result:0.8067531104169627
+
+**Test result:0.8019258163714508
+
+**Test result:0.8044639760939681
+

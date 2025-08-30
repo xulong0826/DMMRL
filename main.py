@@ -17,7 +17,7 @@ import numpy as np
 from tqdm import tqdm
 from torch.optim import Adam
 from parser_args import get_args
-# from tensorboardX import SummaryWriter  # 删除
+import torch.nn.utils as nn_utils  # 添加这行
 from chemprop.data import StandardScaler
 from utils.dataset import Seq2seqDataset, get_data, split_data, MoleculeDataset, InMemoryDataset, load_npz_to_data_list
 from utils.evaluate import eval_rocauc, eval_rmse
@@ -94,6 +94,7 @@ def prepare_data(args, idx, seq_data, seq_mask, gnn_data, geo_data, device):
 
 
 def train(args, epoch, model, optimizer, scheduler, train_idx_loader, seq_data, seq_mask, gnn_data, geo_data, device):
+    model.train()  # 添加这行
     total_all_loss = 0
     total_lab_loss = 0
     total_recon_loss = 0
@@ -102,17 +103,19 @@ def train(args, epoch, model, optimizer, scheduler, train_idx_loader, seq_data, 
         # 3D data
         seq_batch, seq_batch_mask, seq_batch_batch, gnn_batch, features_batch, gnn_batch_batch, geo_gen, node_id_all, \
         edge_id_all, mask, targets = prepare_data(args, idx, seq_data, seq_mask, gnn_data, geo_data, device)
-        shared_list, private_list, preds, recon_list, orig_list, mu_shared_list, logvar_shared_list, mu_private_list, logvar_private_list = model(seq_batch, seq_batch_mask, seq_batch_batch, gnn_batch, features_batch, gnn_batch_batch,
+        shared_list, private_list, preds, mu_shared_list, logvar_shared_list, mu_private_list, logvar_private_list = model(seq_batch, seq_batch_mask, seq_batch_batch, gnn_batch, features_batch, gnn_batch_batch,
                               geo_gen, node_id_all, edge_id_all)
-        total_loss, loss_label, loss_recon = model.loss_cal(preds, targets, mask, recon_list, orig_list, mu_shared_list, logvar_shared_list, mu_private_list, logvar_private_list, shared_list, private_list)
+        total_loss, loss_label, loss_aux = model.loss_cal(preds, targets, mask, mu_shared_list, logvar_shared_list, mu_private_list, logvar_private_list, shared_list, private_list)
         total_all_loss = total_loss.item() + total_all_loss
         total_lab_loss = loss_label.item() + total_lab_loss
-        total_recon_loss = loss_recon.item() + total_recon_loss
+        total_recon_loss = loss_aux.item() + total_recon_loss
         total_loss.backward()
+        # 在optimizer.step()之前进行梯度裁剪
+        torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
         optimizer.step()
         if isinstance(scheduler, NoamLR):
             scheduler.step()
-    #print(f"Train - All Loss: {total_all_loss:.4f}, Lab Loss: {total_lab_loss:.4f}, Recon Loss: {total_cl_loss:.4f}")
+    #print(f"Train - All Loss: {total_all_loss:.4f}, Lab Loss: {total_lab_loss:.4f}, Aux Loss: {total_cl_loss:.4f}")
     return total_all_loss, total_lab_loss, total_recon_loss, model
 
 @torch.no_grad()
@@ -126,14 +129,14 @@ def val(args, epoch, model, scaler, val_idx_loader, seq_data, seq_mask, gnn_data
         # 3D data
         seq_batch, seq_batch_mask, seq_batch_batch, gnn_batch, features_batch, gnn_batch_batch, geo_gen, node_id_all, \
         edge_id_all, mask, targets = prepare_data(args, idx, seq_data, seq_mask, gnn_data, geo_data, device)
-        shared_list, private_list, preds, recon_list, orig_list, mu_shared_list, logvar_shared_list, mu_private_list, logvar_private_list = model(seq_batch, seq_batch_mask, seq_batch_batch, gnn_batch, features_batch, gnn_batch_batch,
+        shared_list, private_list, preds, mu_shared_list, logvar_shared_list, mu_private_list, logvar_private_list = model(seq_batch, seq_batch_mask, seq_batch_batch, gnn_batch, features_batch, gnn_batch_batch,
                               geo_gen, node_id_all, edge_id_all)
         if scaler is not None and args.task_type == 'reg':
             preds = torch.tensor(scaler.inverse_transform(preds.detach().cpu()).astype(np.float64)).to(device)
-        total_loss, loss_label, loss_recon = model.loss_cal(preds, targets, mask, recon_list, orig_list, mu_shared_list, logvar_shared_list, mu_private_list, logvar_private_list, shared_list, private_list)
+        total_loss, loss_label, loss_aux = model.loss_cal(preds, targets, mask, mu_shared_list, logvar_shared_list, mu_private_list, logvar_private_list, shared_list, private_list)
         total_all_loss = total_loss.item() + total_all_loss
         total_lab_loss = loss_label.item() + total_lab_loss
-        total_recon_loss = loss_recon.item() + total_recon_loss
+        total_recon_loss = loss_aux.item() + total_recon_loss
         y_true.append(targets)
         y_pred.append(preds)
     y_true = torch.cat(y_true, dim=0).detach().cpu().numpy()
@@ -143,7 +146,7 @@ def val(args, epoch, model, scaler, val_idx_loader, seq_data, seq_mask, gnn_data
         result = eval_rocauc(input_dict)['rocauc']
     else:
         result = eval_rmse(input_dict)['rmse']
-    print(f"Val   - epoch:{epoch}, All Loss: {total_all_loss:.4f}, Lab Loss: {total_lab_loss:.4f}, Recon Loss: {total_recon_loss:.4f}, Result: {result:.5f}")
+    #print(f"Val   - epoch:{epoch}, All Loss: {total_all_loss:.4f}, Lab Loss: {total_lab_loss:.4f}, Aux Loss: {total_recon_loss:.4f}, Result: {result:.5f}")
     return result, total_all_loss, total_lab_loss, total_recon_loss, model
 
 @torch.no_grad()
@@ -154,7 +157,7 @@ def test(args, model, scaler, test_idx_loader, seq_data, seq_mask, gnn_data, geo
         # 3D data
         seq_batch, seq_batch_mask, seq_batch_batch, gnn_batch, features_batch, gnn_batch_batch, geo_gen, node_id_all, \
         edge_id_all, mask, targets = prepare_data(args, idx, seq_data, seq_mask, gnn_data, geo_data, device)
-        shared_list, private_list, preds, recon_list, orig_list, mu_shared_list, logvar_shared_list, mu_private_list, logvar_private_list = model(seq_batch, seq_batch_mask, seq_batch_batch, gnn_batch, features_batch, gnn_batch_batch,
+        shared_list, private_list, preds, mu_shared_list, logvar_shared_list, mu_private_list, logvar_private_list = model(seq_batch, seq_batch_mask, seq_batch_batch, gnn_batch, features_batch, gnn_batch_batch,
                               geo_gen, node_id_all, edge_id_all)
         if scaler is not None and args.task_type == 'reg':
             preds = torch.tensor(scaler.inverse_transform(preds.detach().cpu()).astype(np.float64))
@@ -176,6 +179,8 @@ def main(args):
     log_file = f"./LOGS/{args.dataset}/complete_output_{timestamp}.log"
     os.makedirs(f"./LOGS/{args.dataset}/", exist_ok=True)
     sys.stdout = TeeOutput(log_file)
+    # 写入命令行启动参数
+    print("🔧 Command: " + " ".join(sys.argv))
     print(f"🔧 All print outputs will be saved to: {log_file}")
 
     # device init
@@ -258,6 +263,7 @@ def main(args):
     args.seq_hidden_dim = args.gnn_hidden_dim
     args.geo_hidden_dim = args.gnn_hidden_dim
     model = Multi_modal(args, compound_encoder_config, device)
+    model = model.to(device)
     optimizer = Adam(params=model.parameters(), lr=args.init_lr, weight_decay=1e-5)
     schedule = NoamLR(optimizer=optimizer, warmup_epochs=[args.warmup_epochs], total_epochs=[args.epochs],
                       steps_per_epoch=len(train_idx) // args.batch_size, init_lr=[args.init_lr],
@@ -273,12 +279,7 @@ def main(args):
         # train
         train_all_loss, train_lab_loss, train_recon_loss, model = train(args, epoch, model, optimizer, schedule, train_idx_loader,
                                                                      seq_data, seq_mask, datas, data_3d, device)
-        #print(f"epoch:{epoch}, all_loss:{train_all_loss}, lab_loss:{train_lab_loss}, cl_loss:{train_cl_loss}")
-        print(f"Train - epoch:{epoch}, All Loss: {train_all_loss:.4f}, Lab Loss: {train_lab_loss:.4f}, Recon Loss: {train_recon_loss:.4f}")
-        # for name, param in model.named_parameters():
-        #     if torch.isnan(param).any():
-        #         print(f"NaN in parameter {name} after training step!")
-        # val
+        #print(f"Train - epoch:{epoch}, All Loss: {train_all_loss:.4f}, Lab Loss: {train_lab_loss:.4f}, Aux Loss: {train_recon_loss:.4f}")
         model.eval()
         val_result, val_all_loss, val_lab_loss, val_cl_loss, model = val(args, epoch, model, scaler, val_sampler, seq_data,
                                                                          seq_mask, datas, data_3d, device)
@@ -289,7 +290,7 @@ def main(args):
             best_result = val_result
             #print("--min_val_loss:" + str(val_all_loss) + ", val_result:" + str(val_result))
             result = test(args, save_model, scaler, test_sampler, seq_data, seq_mask, datas, data_3d, device)
-            print("*****************************************************************************Test result:" + str(result) + "********\n")
+            print("**Test result:" + str(result) + "\n")
             if best_test is None or best_test < result:
                 best_test = result
                 best_epoch = epoch

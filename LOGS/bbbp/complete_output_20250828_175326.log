@@ -1,0 +1,60 @@
+🔧 Command: main.py --dataset bbbp --task_type class --seed 1 --gpu 1 --norm 0 --split_type random --batch_size 64 --vib_norm 0
+🔧 All print outputs will be saved to: ./LOGS/bbbp/complete_output_20250828_175326.log
+Device set to : NVIDIA GeForce RTX 4060 Ti
+lr:0.001, cl_loss:0.1, cl_loss_num:0, pro_num:1, pool_type:attention, gnn_hidden_dim:256, batch_size:64, norm:0, fusion:3
+0: 23.49%, 1: 76.51%
+[GeoGNNModel] embed_dim:256
+[GeoGNNModel] dropout_rate:0.5
+[GeoGNNModel] layer_num:8
+[GeoGNNModel] readout:mean
+[GeoGNNModel] atom_names:['atomic_num', 'formal_charge', 'degree', 'chiral_tag', 'total_numHs', 'is_aromatic', 'hybridization']
+[GeoGNNModel] bond_names:['bond_dir', 'bond_type', 'is_in_ring']
+[GeoGNNModel] bond_float_names:['bond_length']
+[GeoGNNModel] bond_angle_float_names:['bond_angle']
+train model ...
+**Test result:0.7930021367521368
+
+**Test result:0.8448183760683762
+
+**Test result:0.8703258547008547
+
+**Test result:0.8713942307692308
+
+**Test result:0.8959668803418804
+
+**Test result:0.8826121794871795
+
+**Test result:0.8859508547008547
+
+**Test result:0.9290865384615384
+
+**Test result:0.9348290598290598
+
+**Test result:0.8985042735042735
+
+**Test result:0.9289529914529915
+
+**Test result:0.9491185897435896
+
+**Test result:0.953392094017094
+
+**Test result:0.9572649572649573
+
+**Test result:0.9731570512820512
+
+**Test result:0.969551282051282
+
+**Test result:0.9618055555555556
+
+**Test result:0.952590811965812
+
+**Test result:0.953926282051282
+
+**Test result:0.9708867521367521
+
+**Test result:0.9535256410256411
+
+**Test result:0.9581997863247863
+
+**Test result:0.9651442307692307
+

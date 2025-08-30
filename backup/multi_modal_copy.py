@@ -96,7 +96,7 @@ class WeightFusion(nn.Module):
 #         return fused
 
 class VAEHead(nn.Module):
-    def __init__(self, in_dim, shared_dim, private_dim, hidden_dim=512, dropout=0.1, out_act=None, norm=True):
+    def __init__(self, in_dim, shared_dim, private_dim, hidden_dim=256, dropout=0.5, out_act=None, norm=True):
         super().__init__()
         encoder_layers = [
             nn.Linear(in_dim, hidden_dim),
@@ -182,31 +182,15 @@ class Multi_modal(nn.Module):
         self.private2shared_proj = nn.Linear(self.private_dim, self.shared_dim).to(device)
 
         if args.pro_num == 3:
-            self.pro_seq = nn.Sequential(
-                nn.Linear(self.shared_dim, self.latent_dim), nn.ReLU(inplace=True),
-                nn.LayerNorm(self.latent_dim),  # 统一加LayerNorm
-                nn.Linear(self.latent_dim, self.latent_dim), nn.ReLU(inplace=True),
-                nn.LayerNorm(self.latent_dim)
-            ).to(device)
-            self.pro_gnn = nn.Sequential(
-                nn.Linear(self.shared_dim, self.latent_dim), nn.ReLU(inplace=True),
-                nn.LayerNorm(self.latent_dim),
-                nn.Linear(self.latent_dim, self.latent_dim), nn.ReLU(inplace=True),
-                nn.LayerNorm(self.latent_dim)
-            ).to(device)
-            self.pro_geo = nn.Sequential(
-                nn.Linear(self.shared_dim, self.latent_dim), nn.ReLU(inplace=True),
-                nn.LayerNorm(self.latent_dim),
-                nn.Linear(self.latent_dim, self.latent_dim), nn.ReLU(inplace=True),
-                nn.LayerNorm(self.latent_dim)
-            ).to(device)
+            self.pro_seq = nn.Sequential(nn.Linear(args.seq_hidden_dim, self.latent_dim), nn.ReLU(inplace=True),
+                                         nn.Linear(self.latent_dim, self.latent_dim)).to(device)
+            self.pro_gnn = nn.Sequential(nn.Linear(args.gnn_hidden_dim, self.latent_dim), nn.ReLU(inplace=True),
+                                         nn.Linear(self.latent_dim, self.latent_dim)).to(device)
+            self.pro_geo = nn.Sequential(nn.Linear(args.geo_hidden_dim, self.latent_dim), nn.ReLU(inplace=True),
+                                         nn.Linear(self.latent_dim, self.latent_dim)).to(device)
         elif args.pro_num == 1:
-            self.pro_seq = nn.Sequential(
-                nn.Linear(self.shared_dim, self.latent_dim), nn.ReLU(inplace=True),
-                nn.LayerNorm(self.latent_dim),
-                nn.Linear(self.latent_dim, self.latent_dim), nn.ReLU(inplace=True),
-                nn.LayerNorm(self.latent_dim)
-            ).to(device)
+            self.pro_seq = nn.Sequential(nn.Linear(args.seq_hidden_dim, self.latent_dim), nn.ReLU(inplace=True),
+                                         nn.Linear(self.latent_dim, self.latent_dim)).to(device)
             self.pro_gnn = self.pro_seq
             self.pro_geo = self.pro_seq
 
@@ -217,8 +201,10 @@ class Multi_modal(nn.Module):
         else:
             self.pool = Global_Attention(args.seq_hidden_dim).to(self.device)
 
-        fusion_dim = args.gnn_hidden_dim * self.graph + args.seq_hidden_dim * self.sequence + \
-                     args.geo_hidden_dim * self.geometry
+        # fusion_dim = args.gnn_hidden_dim * self.graph + args.seq_hidden_dim * self.sequence + \
+        #              args.geo_hidden_dim * self.geometry
+        fusion_dim = (self.shared_dim + args.gnn_hidden_dim) * self.graph + (self.shared_dim + args.seq_hidden_dim) * self.sequence + \
+                     (self.shared_dim + args.geo_hidden_dim) * self.geometry
         if self.args.fusion == 3:
             fusion_dim = fusion_dim // (self.graph + self.sequence + self.geometry)
             self.fusion = WeightFusion(self.graph + self.sequence + self.geometry, fusion_dim, device=self.device)
@@ -227,8 +213,13 @@ class Multi_modal(nn.Module):
             fusion_dim = args.seq_hidden_dim
 
         self.dropout = nn.Dropout(args.dropout)
-        self.output_layer = nn.Sequential(nn.Linear(int(fusion_dim), int(fusion_dim)), nn.ReLU(), nn.Dropout(args.dropout),
-                                          nn.Linear(int(fusion_dim), args.output_dim)).to(self.device)
+        self.output_layer = nn.Sequential(
+            nn.Linear(int(fusion_dim), int(fusion_dim // 2)),
+            nn.ReLU(),
+            nn.LayerNorm(int(fusion_dim // 2)),
+            nn.Dropout(args.dropout),
+            nn.Linear(int(fusion_dim // 2), args.output_dim)
+        ).to(self.device)
         # self.output_layer = nn.Sequential(
         #     nn.Linear(self.shared_dim, self.shared_dim//2), nn.ReLU(),
         #     nn.LayerNorm(self.shared_dim//2),
@@ -244,8 +235,9 @@ class Multi_modal(nn.Module):
 
         if self.graph:
             node_gnn_x = self.gnn(gnn_batch_graph, gnn_feature_batch, batch_mask_gnn)
-            node_gnn_x = F.layer_norm(node_gnn_x, node_gnn_x.shape[-1:])  # 统一正则化
+            #node_gnn_x = F.layer_norm(node_gnn_x, node_gnn_x.shape[-1:])  # 统一正则化
             graph_gnn_x = self.pool(node_gnn_x, batch_mask_gnn)
+            
             z_shared, z_private, recon, mu_s, logvar_s, mu_p, logvar_p = self.gnn_ae(graph_gnn_x)
             shared_list.append(z_shared)
             private_list.append(z_private)
@@ -254,10 +246,15 @@ class Multi_modal(nn.Module):
             mu_private_list.append(mu_p)
             logvar_private_list.append(logvar_p)
             recon_list.append(recon)
-            orig_list.append(graph_gnn_x)
+            
+            if self.args.norm:
+                orig_list.append(F.normalize(graph_gnn_x, p=2, dim=1))
+            else:
+                orig_list.append(graph_gnn_x)
+
         if self.sequence:
             nloss, node_seq_x = self.transformer(trans_batch_seq)
-            node_seq_x = F.layer_norm(node_seq_x, node_seq_x.shape[-1:])
+            #node_seq_x = F.layer_norm(node_seq_x, node_seq_x.shape[-1:])
             graph_seq_x = self.pool(node_seq_x[seq_mask], batch_mask_seq)
             z_shared, z_private, recon, mu_s, logvar_s, mu_p, logvar_p = self.seq_ae(graph_seq_x)
             shared_list.append(z_shared)
@@ -267,10 +264,15 @@ class Multi_modal(nn.Module):
             mu_private_list.append(mu_p)
             logvar_private_list.append(logvar_p)
             recon_list.append(recon)
-            orig_list.append(graph_seq_x)
+
+            if self.args.norm:
+                orig_list.append(F.normalize(graph_seq_x, p=2, dim=1))
+            else:
+                orig_list.append(graph_seq_x)
+
         if self.geometry:
             node_repr, edge_repr = self.compound_encoder(graph_dict[0], graph_dict[1], node_id_all, edge_id_all)
-            node_repr = F.layer_norm(node_repr, node_repr.shape[-1:])
+            #node_repr = F.layer_norm(node_repr, node_repr.shape[-1:])
             graph_geo_x = self.pool(node_repr, node_id_all[0])
             z_shared, z_private, recon, mu_s, logvar_s, mu_p, logvar_p = self.geo_ae(graph_geo_x)
             shared_list.append(z_shared)
@@ -280,9 +282,18 @@ class Multi_modal(nn.Module):
             mu_private_list.append(mu_p)
             logvar_private_list.append(logvar_p)
             recon_list.append(recon)
-            orig_list.append(graph_geo_x)
 
-        molecule_emb = self.fusion(shared_list)
+            if self.args.norm:
+                orig_list.append(F.normalize(graph_geo_x, p=2, dim=1))
+            else:
+                orig_list.append(graph_geo_x)
+
+        if self.args.norm:
+            residual_list = [torch.cat([F.normalize(s, p=2, dim=1), o], dim=1) for s, o in zip(shared_list, orig_list)]
+        else:
+            residual_list = [torch.cat([s, o], dim=1) for s, o in zip(shared_list, orig_list)]
+        #residual_list = [torch.cat([s, o], dim=1) for s, o in zip(shared_list, orig_list)]
+        molecule_emb = self.fusion(residual_list)  # [batch, fusion_dim]
         molecule_emb = self.dropout(molecule_emb)
         preds = self.output_layer(molecule_emb)
         if torch.isnan(preds).any():
@@ -321,9 +332,12 @@ class Multi_modal(nn.Module):
                 loss += (1 - cos_sim).mean()
         return loss / (n * (n-1) / 2)
 
-    def loss_cal(self, preds, targets, mask, recon_list, orig_list, mu_shared_list, logvar_shared_list, mu_private_list, logvar_private_list,
+    def loss_cal(self, epoch, preds, targets, mask, recon_list, orig_list, mu_shared_list, logvar_shared_list, mu_private_list, logvar_private_list,
                 z_shared_list, z_private_list,
-                recon_weight=0.2, beta_shared=0.01, beta_private=0.01, gamma_ortho=0.001, gamma_align=0.001):
+                recon_weight=0.1, beta_shared=0.01, beta_private=0.01, gamma_ortho=0.01, gamma_align=0.01, kl_warmup_epochs=20):
+        # 温度上升系数，前kl_warmup_epochs轮线性从0到1
+        #kl_weight = min(1.0, epoch / kl_warmup_epochs)
+        #kl_weight = 0.5 * (1 - math.cos(math.pi * min(1.0, epoch / kl_warmup_epochs)))
         loss_label = self.label_loss(preds, targets, mask)
         recon_loss = self.ae_loss(recon_list, orig_list)
         kl_shared = self.kl_loss(mu_shared_list, logvar_shared_list)
@@ -331,6 +345,13 @@ class Multi_modal(nn.Module):
         ortho = self.ortho_loss(z_shared_list, z_private_list)
         align = self.align_loss(z_shared_list)
         total_loss = loss_label + recon_weight * recon_loss + beta_shared * kl_shared + beta_private * kl_private + gamma_ortho * ortho + gamma_align * align
+        # total_loss = (
+        #     loss_label
+        #     + recon_weight * recon_loss
+        #     + kl_weight * (beta_shared * kl_shared + beta_private * kl_private)
+        #     + gamma_ortho * ortho
+        #     + gamma_align * align
+        # )
         # print(f"Total Loss: {total_loss.item():.4f}, Label Loss: {loss_label.item():.4f}, "
         #       f"Recon Loss: {recon_weight * recon_loss.item():.4f}, KL Shared: {beta_shared * kl_shared.item():.4f}, "
         #       f"KL Private: {beta_private * kl_private.item():.4f}, Ortho Loss: {gamma_ortho * ortho.item():.8f}, Align Loss: {gamma_align * align.item():.8f}")
