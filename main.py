@@ -103,9 +103,13 @@ def train(args, epoch, model, optimizer, scheduler, train_idx_loader, seq_data, 
         # 3D data
         seq_batch, seq_batch_mask, seq_batch_batch, gnn_batch, features_batch, gnn_batch_batch, geo_gen, node_id_all, \
         edge_id_all, mask, targets = prepare_data(args, idx, seq_data, seq_mask, gnn_data, geo_data, device)
-        shared_list, private_list, preds, mu_shared_list, logvar_shared_list, mu_private_list, logvar_private_list = model(seq_batch, seq_batch_mask, seq_batch_batch, gnn_batch, features_batch, gnn_batch_batch,
+        shared_list, private_list, preds, mu_shared_list, logvar_shared_list, mu_private_list, logvar_private_list, original_features, recon_features = model(seq_batch, seq_batch_mask, seq_batch_batch, gnn_batch, features_batch, gnn_batch_batch,
                               geo_gen, node_id_all, edge_id_all)
-        total_loss, loss_label, loss_aux = model.loss_cal(preds, targets, mask, mu_shared_list, logvar_shared_list, mu_private_list, logvar_private_list, shared_list, private_list)
+        total_loss, loss_label, loss_aux = model.loss_cal(
+            epoch, preds, targets, mask,
+            mu_shared_list, logvar_shared_list, mu_private_list, logvar_private_list,
+            shared_list, private_list, original_features, recon_features
+        )
         total_all_loss = total_loss.item() + total_all_loss
         total_lab_loss = loss_label.item() + total_lab_loss
         total_recon_loss = loss_aux.item() + total_recon_loss
@@ -129,11 +133,15 @@ def val(args, epoch, model, scaler, val_idx_loader, seq_data, seq_mask, gnn_data
         # 3D data
         seq_batch, seq_batch_mask, seq_batch_batch, gnn_batch, features_batch, gnn_batch_batch, geo_gen, node_id_all, \
         edge_id_all, mask, targets = prepare_data(args, idx, seq_data, seq_mask, gnn_data, geo_data, device)
-        shared_list, private_list, preds, mu_shared_list, logvar_shared_list, mu_private_list, logvar_private_list = model(seq_batch, seq_batch_mask, seq_batch_batch, gnn_batch, features_batch, gnn_batch_batch,
+        shared_list, private_list, preds, mu_shared_list, logvar_shared_list, mu_private_list, logvar_private_list, original_features, recon_features = model(seq_batch, seq_batch_mask, seq_batch_batch, gnn_batch, features_batch, gnn_batch_batch,
                               geo_gen, node_id_all, edge_id_all)
         if scaler is not None and args.task_type == 'reg':
             preds = torch.tensor(scaler.inverse_transform(preds.detach().cpu()).astype(np.float64)).to(device)
-        total_loss, loss_label, loss_aux = model.loss_cal(preds, targets, mask, mu_shared_list, logvar_shared_list, mu_private_list, logvar_private_list, shared_list, private_list)
+        total_loss, loss_label, loss_aux = model.loss_cal(
+            epoch, preds, targets, mask,
+            mu_shared_list, logvar_shared_list, mu_private_list, logvar_private_list,
+            shared_list, private_list, original_features, recon_features
+        )
         total_all_loss = total_loss.item() + total_all_loss
         total_lab_loss = loss_label.item() + total_lab_loss
         total_recon_loss = loss_aux.item() + total_recon_loss
@@ -157,7 +165,7 @@ def test(args, model, scaler, test_idx_loader, seq_data, seq_mask, gnn_data, geo
         # 3D data
         seq_batch, seq_batch_mask, seq_batch_batch, gnn_batch, features_batch, gnn_batch_batch, geo_gen, node_id_all, \
         edge_id_all, mask, targets = prepare_data(args, idx, seq_data, seq_mask, gnn_data, geo_data, device)
-        shared_list, private_list, preds, mu_shared_list, logvar_shared_list, mu_private_list, logvar_private_list = model(seq_batch, seq_batch_mask, seq_batch_batch, gnn_batch, features_batch, gnn_batch_batch,
+        shared_list, private_list, preds, mu_shared_list, logvar_shared_list, mu_private_list, logvar_private_list, original_features, recon_features = model(seq_batch, seq_batch_mask, seq_batch_batch, gnn_batch, features_batch, gnn_batch_batch,
                               geo_gen, node_id_all, edge_id_all)
         if scaler is not None and args.task_type == 'reg':
             preds = torch.tensor(scaler.inverse_transform(preds.detach().cpu()).astype(np.float64))

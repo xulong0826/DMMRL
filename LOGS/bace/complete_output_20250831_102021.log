@@ -1,0 +1,70 @@
+🔧 Command: main.py --dataset bace --task_type class --seed 1 --gpu 1 --norm 0 --split_type random --batch_size 32 --vib_norm 0
+🔧 All print outputs will be saved to: ./LOGS/bace/complete_output_20250831_102021.log
+Device set to : NVIDIA GeForce RTX 3060
+lr:0.001, cl_loss:0.1, cl_loss_num:0, pro_num:1, pool_type:attention, gnn_hidden_dim:256, batch_size:32, norm:0, fusion:3
+0: 54.33%, 1: 45.67%
+[GeoGNNModel] embed_dim:256
+[GeoGNNModel] dropout_rate:0.5
+[GeoGNNModel] layer_num:8
+[GeoGNNModel] readout:mean
+[GeoGNNModel] atom_names:['atomic_num', 'formal_charge', 'degree', 'chiral_tag', 'total_numHs', 'is_aromatic', 'hybridization']
+[GeoGNNModel] bond_names:['bond_dir', 'bond_type', 'is_in_ring']
+[GeoGNNModel] bond_float_names:['bond_length']
+[GeoGNNModel] bond_angle_float_names:['bond_angle']
+train model ...
+**Test result:0.515625
+
+**Test result:0.693359375
+
+**Test result:0.7228338068181818
+
+**Test result:0.7780539772727273
+
+**Test result:0.7856889204545455
+
+**Test result:0.7906605113636365
+
+**Test result:0.8109019886363636
+
+**Test result:0.822265625
+
+**Test result:0.8304332386363636
+
+**Test result:0.8465909090909091
+
+**Test result:0.8499644886363636
+
+**Test result:0.8615056818181817
+
+**Test result:0.873046875
+
+**Test result:0.8702059659090909
+
+**Test result:0.87890625
+
+**Test result:0.8943536931818181
+
+**Test result:0.8693181818181818
+
+**Test result:0.8918678977272727
+
+**Test result:0.884765625
+
+**Test result:0.8941761363636364
+
+**Test result:0.9064275568181818
+
+**Test result:0.9108664772727273
+
+**Test result:0.9005681818181819
+
+**Test result:0.9078480113636364
+
+**Test result:0.9009232954545455
+
+**Test result:0.9137073863636364
+
+**Test result:0.9098011363636362
+
+**Test result:0.9144176136363636
+

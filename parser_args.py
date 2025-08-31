@@ -7,20 +7,31 @@ def get_args():
     parser = argparse.ArgumentParser(description='pytorch version of SGG')
 
     # --- 同步修改: 添加损失权重和KL退火的可配置参数 ---
-    parser.add_argument('--beta_shared', type=float, default=0.001,
-                        help='Weight for the KL divergence loss of the shared latent space (VIB).')
-    parser.add_argument('--mmd_private_weight', type=float, default=0.001,
-                        help='Weight for the MMD loss of the private latent spaces.')
-    parser.add_argument('--align_weight', type=float, default=0.1,
-                        help='Weight for the contrastive alignment loss between shared representations.')
     parser.add_argument('--kl_warmup_epochs', type=int, default=50,
                         help='Number of epochs to linearly anneal the KL loss weight (beta_shared) from 0 to its target value.')
+    # 根据损失观察调整默认权重
+    parser.add_argument('--beta_shared', type=float, default=0.01,
+                    help='KL损失权重，观察值较大，适当降低')
+    parser.add_argument('--mmd_private_weight', type=float, default=0.001,
+                    help='MMD损失权重，观察值较小，显著提高')
+    parser.add_argument('--align_weight', type=float, default=0.001,
+                    help='对齐损失权重，观察值较大，适当降低')
+    parser.add_argument('--ortho_weight', type=float, default=0.001,
+                    help='正交损失权重，观察值小，提高其影响')
+    parser.add_argument('--recon_weight', type=float, default=0.001,
+                    help='重构损失权重，保持适中')
+    # # 权重推荐
+    # beta_shared = 0.01       # KL损失 (主要辅助损失)
+    # ortho_weight = 0.005     # 正交损失 (主要辅助损失)
+    # align_weight = 0.003     # 对齐损失 (次要)
+    # mmd_private_weight = 0.001  # MMD损失 (次要)
+    # recon_weight = 0.001     # 重构损失 (次要)
 
     parser.add_argument('--vib_hidden_dim', type=int, default=512)
     parser.add_argument('--vib_dropout', type=float, default=0.5)
     parser.add_argument('--vib_norm', type=int, default=1)  # 1/0
-    parser.add_argument('--vib_shared_dim', type=int, default=384)
-    parser.add_argument('--vib_private_dim', type=int, default=128)
+    parser.add_argument('--vib_shared_dim', type=int, default=256)
+    parser.add_argument('--vib_private_dim', type=int, default=256)
     
     ''' Graph Settings '''
     parser.add_argument('--graph', type=bool, default=True)

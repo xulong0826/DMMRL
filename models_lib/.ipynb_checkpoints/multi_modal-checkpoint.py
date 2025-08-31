@@ -109,6 +109,32 @@ class Multi_modal(nn.Module):
         self.vib_dropout = args.vib_dropout
         self.vib_norm = bool(args.vib_norm)
 
+        self.warmup_epochs = args.kl_warmup_epochs
+
+        self.ortho_weight = getattr(args, 'ortho_weight', 0.1)
+        self.recon_weight = getattr(args, 'recon_weight', 0.1)
+
+        if self.sequence:
+            self.seq_decoder = nn.Sequential(
+                nn.Linear(self.shared_dim + self.private_dim, self.vib_hidden_dim),
+                nn.ReLU(),
+                nn.Linear(self.vib_hidden_dim, args.seq_hidden_dim)
+            ).to(device)
+
+        if self.graph:
+            self.gnn_decoder = nn.Sequential(
+                nn.Linear(self.shared_dim + self.private_dim, self.vib_hidden_dim),
+                nn.ReLU(),
+                nn.Linear(self.vib_hidden_dim, args.gnn_hidden_dim)
+            ).to(device)
+
+        if self.geometry:
+            self.geo_decoder = nn.Sequential(
+                nn.Linear(self.shared_dim + self.private_dim, self.vib_hidden_dim),
+                nn.ReLU(),
+                nn.Linear(self.vib_hidden_dim, args.geo_hidden_dim)
+            ).to(device)
+
         # 编码器
         self.gnn = MPNEncoder(
             atom_fdim=args.gnn_atom_dim,
@@ -174,33 +200,56 @@ class Multi_modal(nn.Module):
         shared_list, private_list = [], []
         mu_shared_list, logvar_shared_list = [], []
         mu_private_list, logvar_private_list = [], []
+        original_features = []
+        recon_features = []
         
         if self.graph:
             node_gnn_x = self.gnn(gnn_batch_graph, gnn_feature_batch, batch_mask_gnn)
             graph_gnn_x = self.pool(node_gnn_x, batch_mask_gnn)
+            original_features.append(graph_gnn_x)
+            
             z_s, z_p, mu_s, logvar_s, mu_p, logvar_p = self.gnn_vib(graph_gnn_x)
             shared_list.append(F.normalize(z_s, p=2, dim=1) if self.args.norm else z_s)
             private_list.append(z_p)
             mu_shared_list.append(mu_s); logvar_shared_list.append(logvar_s)
             mu_private_list.append(mu_p); logvar_private_list.append(logvar_p)
+            
+            # Reconstruction
+            recon_input = torch.cat([z_s, z_p], dim=1)
+            recon_gnn = self.gnn_decoder(recon_input)
+            recon_features.append(recon_gnn)
 
         if self.sequence:
             nloss, node_seq_x = self.transformer(trans_batch_seq)
             graph_seq_x = self.pool(node_seq_x[seq_mask], batch_mask_seq)
+            original_features.append(graph_seq_x)
+            
             z_s, z_p, mu_s, logvar_s, mu_p, logvar_p = self.seq_vib(graph_seq_x)
             shared_list.append(F.normalize(z_s, p=2, dim=1) if self.args.norm else z_s)
             private_list.append(z_p)
             mu_shared_list.append(mu_s); logvar_shared_list.append(logvar_s)
             mu_private_list.append(mu_p); logvar_private_list.append(logvar_p)
+            
+            # Reconstruction
+            recon_input = torch.cat([z_s, z_p], dim=1)
+            recon_seq = self.seq_decoder(recon_input)
+            recon_features.append(recon_seq)
 
         if self.geometry:
             node_repr, edge_repr = self.compound_encoder(graph_dict[0], graph_dict[1], node_id_all, edge_id_all)
             graph_geo_x = self.pool(node_repr, node_id_all[0])
+            original_features.append(graph_geo_x)
+            
             z_s, z_p, mu_s, logvar_s, mu_p, logvar_p = self.geo_vib(graph_geo_x)
             shared_list.append(F.normalize(z_s, p=2, dim=1) if self.args.norm else z_s)
             private_list.append(z_p)
             mu_shared_list.append(mu_s); logvar_shared_list.append(logvar_s)
             mu_private_list.append(mu_p); logvar_private_list.append(logvar_p)
+        
+        # Reconstruction
+        recon_input = torch.cat([z_s, z_p], dim=1)
+        recon_geo = self.geo_decoder(recon_input)
+        recon_features.append(recon_geo)
 
         if self.args.fusion == 1:
             molecule_emb = torch.cat(shared_list, dim=1)
@@ -218,7 +267,8 @@ class Multi_modal(nn.Module):
 
         pred = self.output_layer(molecule_emb)
         
-        return shared_list, private_list, pred, mu_shared_list, logvar_shared_list, mu_private_list, logvar_private_list
+        # return shared_list, private_list, pred, mu_shared_list, logvar_shared_list, mu_private_list, logvar_private_list
+        return shared_list, private_list, pred, mu_shared_list, logvar_shared_list, mu_private_list, logvar_private_list, original_features, recon_features
 
     def label_loss(self, pred, label, mask):
         loss_mat = self.task_loss_fn(pred, label)
@@ -252,14 +302,21 @@ class Multi_modal(nn.Module):
         pos_sim = sim_matrix[range(batch_size), range(batch_size)]
         loss = -torch.log(pos_sim / (sim_matrix.sum(dim=1) - pos_sim + 1e-8)).mean()
         return loss
+    
+    def orthogonality_loss(self, shared, private):
+        """Encourages orthogonality between shared and private representations"""
+        batch_size = shared.size(0)
+        shared_norm = F.normalize(shared, p=2, dim=1)
+        private_norm = F.normalize(private, p=2, dim=1)
+        cosine_sim = torch.abs(torch.sum(shared_norm * private_norm, dim=1))
+        return torch.mean(cosine_sim)
 
-    def loss_cal(self, preds, targets, mask, 
-                     mu_shared_list, logvar_shared_list, mu_private_list, logvar_private_list,
-                     z_shared_list, z_private_list):
+    def loss_cal(self, epoch, preds, targets, mask, 
+                mu_shared_list, logvar_shared_list, mu_private_list, logvar_private_list,
+                z_shared_list, z_private_list, original_features=None, recon_features=None):
         
         # 1. 主要任务损失
         loss_label = self.label_loss(preds, targets, mask)
-        
         # 2. 共享潜变量的KL损失
         kl_shared = sum([self.kl_loss(mu, logvar) for mu, logvar in zip(mu_shared_list, logvar_shared_list)])
         if self.num_modalities > 0:
@@ -284,12 +341,31 @@ class Multi_modal(nn.Module):
             if num_pairs > 0:
                 align /= num_pairs
         
-        aux_loss = (
-            self.beta_shared * kl_shared +
-            self.mmd_private_weight * mmd_private +
-            self.align_weight * align
-        )
+        # 5. 正交损失 - 让共享和私有表示相互正交
+        ortho = torch.tensor(0.0, device=self.device)
+        if z_shared_list and z_private_list:
+            ortho = sum([self.orthogonality_loss(z_s, z_p) 
+                        for z_s, z_p in zip(z_shared_list, z_private_list)])
+            ortho /= len(z_shared_list)
         
+        # 6. 重构损失
+        recon = torch.tensor(0.0, device=self.device)
+        if original_features and recon_features:
+            recon = sum([F.mse_loss(orig, recon) 
+                        for orig, recon in zip(original_features, recon_features)])
+            recon /= len(original_features)
+        
+        kl_factor = min(1.0, epoch / self.warmup_epochs)
+        other_factor = min(1.0, epoch / (self.warmup_epochs / 2))  # 其他损失可以更快达到全权重
+        
+        aux_loss = (
+            self.beta_shared * kl_shared * kl_factor +
+            self.mmd_private_weight * mmd_private * other_factor +
+            self.align_weight * align * other_factor +
+            self.ortho_weight * ortho * other_factor +
+            self.recon_weight * recon * other_factor
+        )
+
         total_loss = loss_label + aux_loss
         
         return total_loss, loss_label, aux_loss

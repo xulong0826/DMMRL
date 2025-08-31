@@ -7,7 +7,7 @@ def main():
     parser.add_argument('--gpu', type=int, default=1, help="GPU id to use for experiments")
     args = parser.parse_args()
 
-    datasets = ["sider", "tox21"]#"bace", "bbbp", "clintox", 
+    datasets = ["bace", "bbbp", "clintox", "sider", "tox21"]
     task_types = ["class"]
     seeds = [1, 2025]
     norm = [0]
