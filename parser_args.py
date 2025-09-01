@@ -7,31 +7,40 @@ def get_args():
     parser = argparse.ArgumentParser(description='pytorch version of SGG')
 
     # --- 同步修改: 添加损失权重和KL退火的可配置参数 ---
-    parser.add_argument('--kl_warmup_epochs', type=int, default=50,
+    parser.add_argument('--kl_warmup_epochs', type=int, default=80,
                         help='Number of epochs to linearly anneal the KL loss weight (beta_shared) from 0 to its target value.')
-    # 根据损失观察调整默认权重
-    parser.add_argument('--beta_shared', type=float, default=0.01,
-                    help='KL损失权重，观察值较大，适当降低')
-    parser.add_argument('--mmd_private_weight', type=float, default=0.001,
-                    help='MMD损失权重，观察值较小，显著提高')
-    parser.add_argument('--align_weight', type=float, default=0.001,
-                    help='对齐损失权重，观察值较大，适当降低')
-    parser.add_argument('--ortho_weight', type=float, default=0.001,
-                    help='正交损失权重，观察值小，提高其影响')
-    parser.add_argument('--recon_weight', type=float, default=0.001,
-                    help='重构损失权重，保持适中')
-    # # 权重推荐
-    # beta_shared = 0.01       # KL损失 (主要辅助损失)
-    # ortho_weight = 0.005     # 正交损失 (主要辅助损失)
-    # align_weight = 0.003     # 对齐损失 (次要)
-    # mmd_private_weight = 0.001  # MMD损失 (次要)
-    # recon_weight = 0.001     # 重构损失 (次要)
+    # 根据损失观察调整默认权重和说明
+    parser.add_argument('--beta_shared', type=float, default=0.1,
+        help='KL损失权重，观察值较主任务高，建议适当降低但仍保持有效正则（推荐0.2~0.4）')
+    
+    parser.add_argument('--mmd_private_weight', type=float, default=100,
+        help='MMD损失权重，观察值极小，需显著提高以保证其有效性（推荐100~500）')
+    
+    parser.add_argument('--align_weight', type=float, default=0.1,
+        help='对齐损失权重，观察值最大，建议适当降低防止主导训练（推荐0.05~0.1）')
+    
+    parser.add_argument('--ortho_weight', type=float, default=0.1,
+        help='正交损失权重，观察值较小，适当提高以增强解耦约束（推荐2~10）')
+    
+    parser.add_argument('--recon_weight', type=float, default=0.1,
+        help='重构损失权重，观察值适中，保持有益但不过度（推荐0.5~1.0）')
 
-    parser.add_argument('--vib_hidden_dim', type=int, default=512)
+    # 修改VIB相关参数
+    parser.add_argument('--vib_norm_type', type=str, default='layer',
+                        choices=['layer', 'batch', 'none'],
+                        help='Normalization type for VIB: layer, batch, or none')
+    parser.add_argument('--vib_residual', type=int, default=1,
+                        help='Whether to use residual connections in VIB (0:False, 1:True)')
+    parser.add_argument('--vib_depth', type=int, default=2, choices=[1, 2],
+                        help='Depth of VIB encoder (1 or 2 layers)')
+    parser.add_argument('--vib_clamp_logvar', type=int, default=1,
+                        help='Whether to clamp logvar in VIB (0:False, 1:True)')
+
+    parser.add_argument('--vib_hidden_dim', type=int, default=64)
     parser.add_argument('--vib_dropout', type=float, default=0.5)
-    parser.add_argument('--vib_norm', type=int, default=1)  # 1/0
-    parser.add_argument('--vib_shared_dim', type=int, default=256)
-    parser.add_argument('--vib_private_dim', type=int, default=256)
+    parser.add_argument('--vib_norm', type=int, default=0)  # 1/0
+    parser.add_argument('--vib_shared_dim', type=int, default=32)
+    parser.add_argument('--vib_private_dim', type=int, default=32)
     
     ''' Graph Settings '''
     parser.add_argument('--graph', type=bool, default=True)
@@ -66,7 +75,7 @@ def get_args():
     parser.add_argument('--lr', type=float, default=1e-3)  # 1e-3
     parser.add_argument('--bias', type=int, default=1)
     parser.add_argument('--norm', type=int, default=0)
-    parser.add_argument('--epochs', type=int, default=150)
+    parser.add_argument('--epochs', type=int, default=250)
     parser.add_argument('--max_lr', type=float, default=2e-3, help='Maximum learning rate')
     parser.add_argument('--init_lr', type=float, default=1e-3, help='Initial learning rate')
     parser.add_argument('--final_lr', type=float, default=1e-3, help='Final learning rate')
