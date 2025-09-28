@@ -4,7 +4,7 @@
 We thank the authors of (SGGRL: Multi-Modal Representation Learning for Molecular Property Prediction: Sequence, Graph, Geometry)[https://github.com/Vencent-Won/SGGRL] for releasing their code. The code in this repository is based on their source code release SGGRL. If you find this code useful, please consider citing their work.
 
 ## Framework
-![method](https://github.com/xulong0826/DMMRL/DMMRL.png)
+![method]([https://github.com/xulong0826/DMMRL/DMMRL.png](https://github.com/xulong0826/DMMRL/blob/main/DMMRL.png))
 
 ## Enviroment
 - paddle-bfloat==0.1.7
