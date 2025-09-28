@@ -1,7 +1,9 @@
 # DMMRL: Disentangled Representation Learning with Variational Autoencoder for Multi-Modal Molecular Property Prediction
 
-## Framework
+## Acknowledgements
+We thank the authors of (SGGRL: Multi-Modal Representation Learning for Molecular Property Prediction: Sequence, Graph, Geometry)[https://github.com/Vencent-Won/SGGRL] for releasing their code. The code in this repository is based on their source code release SGGRL. If you find this code useful, please consider citing their work.
 
+## Framework
 ![method](https://cdn.jsdelivr.net/gh/Vencent-Won/GraphBed/img/SGGRL-framework.png)
 
 ## Enviroment
